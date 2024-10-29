@@ -2,6 +2,8 @@ import { Component, game, Label, Node, UITransform, _decorator } from "cc";
 import { EDITOR } from "cc/env";
 import { GuideManager } from "../GuideManager";
 import { createSprite, createText, createTip } from "../guide_utils";
+import { Debug } from "../../Debugger";
+import { utils } from "../../utils";
 
 
 
@@ -112,13 +114,14 @@ export  class GuideDialogue extends Component {
         }
     }
 
-    executeGuide() {
+    execGuide() {
+        this.log(this.execGuide, "开始执行对话引导！");
         this._playText = true;
         this._charIndex = 0;
         this._timeout = 0;
         this.node.active = true;
         this.tip.active = false;
-        this._descript = GuideManager.instance.guideInfo.descript;
+        this._descript = GuideManager.instance.guideAction.descript;
         for (let e of this.roleList) {
             e.getChildByName('text').getComponent(Label).string = '';
         }
@@ -128,13 +131,17 @@ export  class GuideDialogue extends Component {
 
     }
 
+    private log(fn: Function, ...subst: any[]) {
+        Debug.log(utils.StringUtil.format("[GuideDialogue:%s]", fn.name), ...subst);
+    }
+
     update (dt: number) {
         if (!this._playText) return;
 
         this._timeout += dt;
         if (this._timeout >= this.duration) {
             this._timeout = 0;
-            let index: number = GuideManager.instance.guideInfo.npc - 1;
+            let index: number = GuideManager.instance.guideAction.npc - 1;
             this.roleList[index].getChildByName('text').getComponent(Label).string += this._descript[this._charIndex++];
             if (this._charIndex >= this._descript.length) {
                 this._playText = false;

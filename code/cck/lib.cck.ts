@@ -20,9 +20,6 @@ export type cck_vm_class<DataType> = cck_static<any, {prototype: cck_vm_handler_
 export type cck_loader_AssetType<T = Asset> = Constructor<T>;
 export type cck_initial_asset_info = {path: string, type: cck_loader_AssetType}
 
-export type cck_file_field<T> = { [K in keyof T]: K; }
-export type cck_file_field_type<T> =  Readonly<cck_file_field<T>>;
-
 export type cck_win_model = "ROOT"|"DIALOG"|"ACTIVITY"|"TOAST"|"TOP";
 export type cck_win_activity = {priority: number, view: IWindowBase};
 
@@ -58,12 +55,6 @@ export interface ISignal<T, E> {
     clear(): void;
 }
 
-/**配置表数据类型 */
-export interface IDataTable {
-    /**初始化JSON数据表 */
-    init(data: any): void;
-}
-
 export interface IGameWorld extends IFacade {
     /**当前游戏平台 */
     readonly platform: Platform;
@@ -86,7 +77,7 @@ export interface IGameWorld extends IFacade {
     /**获取当前游戏的版本号 */
     getVersions(): string;
     init(mask: Prefab, wait: Prefab, touchEffect: Prefab): void;
-    canOpenWinForm(accessId: string): boolean;
+    canOpenWindow(accessId: string): boolean;
     /**
      * 加载最初始的资源，一般是游戏首页加载的资源，首页加载的资源必须是resources资源包的资源，
      * 在工程的资源管理结构中，resources资源包应该用于存放各个模块都能使用到的公用资源
@@ -166,46 +157,11 @@ export interface IViewComplete<T, E> extends ISignal<T, E> {
  *    access(访问权限): boolean,
  *    lock(解锁等级): number
  */
-export interface IUIControlConfig extends IDataTable {
+export interface IUIControlConfig {
     readonly key: string;
     readonly uiType: number;
     readonly access: boolean;
     readonly lock: number;
-}
-
-/**
- * 引导配置表类
- * 表结构：
- * 
- *     key(引导id):number, 
- *     guideType(引导类型0是手指引导，1是对话引导，2是文本引导):number, 
- *     targetId(引导目标节点，例如手指指向的按钮节点):number[], 
- *     descript(文本引导或对话引导的文字描述):string, 
- *     uiId(ui视图界面ID):string, 
- *     syncId(下一步引导的id，0为当前引导完成，-1为所有引导完成):number,
- *     againId(未完成当前引导断开后重新上线的下一步引导ID，-1表示直接使用syncId): number,
- *     light(高亮的uiId): number[],
- *     npc(对话引导中是否为NPC): number,
- */
-export interface IGuideConfig extends IDataTable {
-    /**引导id */
-    readonly key: number;
-    /**引导类型 */
-    readonly guideType: number;//0|1|2
-    /**目标id */
-    readonly targetId: string[];
-    /**文字描述 */
-    readonly descript: string;
-    /**窗口id */
-    readonly uiId: string;
-    /**下一步引导 */
-    readonly syncId: number;
-    /**未完成当前引导,断开后重新上线的下一步引导 */
-    readonly againId: number;
-    /**高亮uiId列表 */
-    readonly light: string[];
-    /**对话引导中是否为NPC */
-    readonly npc: number;
 }
 
 /***********************************************音频接口类型定义**************************************/
@@ -287,43 +243,13 @@ export interface IDragonBonesAnimat extends IAnimat {
 
 /*****************************************************************************************/
 
-/**配置表文件容器类型 */
-export interface IContainer<T> {
-    readonly keys: number[]|string[];
-    readonly length: number;
-    readonly fields: cck_file_field_type<T>;
-    /**
-     * 根据id获取配置表的数据
-     * @param id 
-     * @returns 返回对应的id的配置表对象
-     */
-    get(id: number|string): T;
-    add(id: number|string, table: T): void;
-    /**
-     * 获取当前表中的这个字段的值的累加，只有这个字段数据类型为number时才有用
-     * @param field 当前配置表字段名
-     * @returns 返回这个字段在当前配置表中的值的累加，如果数据类型不是number，则返回null
-     */
-    getSumOf(field: string): number|null;
-    /**
-     * 遍历当前配置表
-     * @param callback 
-     */
-    forEach(callback: (value: T, index: number) => void): void;
-    /**
-     * 是否存在这个id的数据
-     * @param id 
-     */
-    contains(id: number|string): boolean;
-}
-
 
 /**引导视图类型 */
-export interface IGuideView {
-    show(): void;
+export interface IGuideWindow extends IWindowBase {
+    closeGuideWindow(): void;
 }
 
-export declare module BarrageArea {
+export declare namespace BarrageArea {
     export enum TruckStatus {
         /**空闲状态 */
         LDLE,
@@ -464,7 +390,7 @@ export interface IWindowManager {
 
 export interface BaseView extends Component {}
 
-export interface IWinView extends Component {
+export interface IGameLayout extends Component {
     /**弹起窗口 */
     popup(): void;
     /**关闭窗口 */
@@ -489,7 +415,7 @@ export interface IWinView extends Component {
     setBackBtnListener(listener: Function): void;
 }
 
-export interface IBaseView {}
+export interface IBaseLayout {}
 
 
 /******************************************************************************/
@@ -499,170 +425,104 @@ export interface IBaseView {}
 export interface IGuideTarget {
     target: Node;
     targetId: string;
-    guideIds: number[];
+    guideIds: string[];
     init(): void;
 }
 
+/**
+ * 引导动作类型
+ * 表结构：
+ * 
+ *     guideId(引导id):string, 
+ *     guideType(引导类型0是手指引导，1是对话引导，2是文本引导):number, 
+ *     targetId(引导目标节点，例如手指指向的按钮节点):number[], 
+ *     descript(文本引导或对话引导的文字描述):string, 
+ *     uiId(ui视图界面ID):string, 
+ *     syncId(下一步引导的id，如果没有下一步引导，则为空字符):string,
+ *     showType(高亮显示的范围，1为整个窗口，2为窗口中的部分区域): number,
+ *     npc(对话引导中是否为NPC): number,
+ */
+export interface IGuideAction {
+    /**引导id */
+    readonly guideId: string;
+    /**引导类型0是手指引导，1是对话引导，2是文本引导 */
+    readonly guideType: number;//0|1|2
+    /**引导目标节点id，例如手指指向的按钮节点id */
+    readonly targetId: string[];
+    /**文本引导或对话引导的文字描述 */
+    readonly descript: string;
+    /**ui视图界面ID */
+    readonly uiId: string;
+    /**下一步引导的id，如果没有下一步引导，则为空字符 */
+    readonly syncId: string;
+    /**高亮显示的范围，1为整个窗口，2为窗口中的部分区域 */
+    readonly showType: number;
+    /**对话引导中是否为NPC */
+    readonly npc: number;
+}
 
 /**
- * 引导管理,是一个单例,采用kit.guideManager访问，
- * 外部主要调用引导恢复guideResume()这个接口
+ * 引导管理
  * */
 export interface IGuideManager {
-    /**引导是否强制关闭了 */
+    /**引导是否关闭了 */
     readonly isGuideClose: boolean;
     /**引导已经启动 */
     readonly isGuideLaunched: boolean;
     /**正在引导 */
     readonly isGuiding: boolean;
-    /**引导类型 */
-    readonly guideType: number;
-    /**引导目标 */
-    readonly guideTargets: IGuideTarget[];
-    /**当前要执行的引导信息 */
-    readonly guideInfo: IGuideConfig;
-    /**引导文件数据 */
-    readonly guideFile: IContainer<IGuideConfig>;
-    /**已经执行完的引导id */
-    readonly guideId: number;
-    /**手指移动速度 */
-    readonly fingerSpeed: number;
-    /**高亮节点列表 */
-    readonly lightTargets: Node[];
+    /**所有的引导数据 */
+    readonly guideData: {};
 
-    /*************************************可能需要外部调用的接口***************************/
+    /**
+     * 加载引导数据
+     * @param path 引导数据本地目录的路径
+     * @param nameOrUrl 资源包名或者路径
+     * @param onComplete 加载成功回调
+     */
+    loadGuideData(path: string, nameOrUrl: string, onComplete?: Function): void;
+    loadGuideData(path: string, onComplete?: Function): void;
     /**
      * 设置引导视图
-     * @param guideView 
+     * @param accessId 
      */
-    setGuideView(guideView: IGuideView): void;
+    setGuideView(accessId: string): void;
     /**
-     * 设置引导数据文件
-     * @param file 
+     * 同步引导组，在开始引导之前，必须要先同步引导组
+     * @param groupId 引导组id
+     * @param guideId 引导id，一般为存储的上一次已经执行完的id，如果没有，则可以不传
      */
-    setGuideFile(file: IContainer<IGuideConfig>): void;
+    syncGuideGroup(groupId: string, guideId?: string): void;
     /**
-     * 引导数据同步
-     * @param guideId 
+     * 打开引导，让引导开始执行
      */
-    guideSync(guideId: number): void;
-    /**从缓存中获取同步引导 */
-    syncFromStorage(): number;
-    /**删除引导目标 */
-    delGuideTarget(targetId: string): boolean;
-    /**
-     * 增加引导视图
-     * @param uiId 
-     * @param target 引导页面节点
-     * @param scope  
-     */
-    addGuideView(uiId: string, target: Node, scope: number): void;
-    /**
-     * 删除引导视图
-     * @param uiId 
-     * @param scope 
-     */
-    removeGuideView(uiId: string, scope: number): void;
-    /**还有引导 */
+    guideOpen(): void;
+    /**在当前这一组引导组内，是否还有引导未执行完 */
     hasGuideAction(): boolean;
-    /**同步存储引导Id */
-    syncToStorage(): void;
-    /**引导回退 */
+    /**引导回退，即不执行下一步引导，还是从当前这一步引导开始 */
     guideRollBack(): void;
-    /**引导完成, 继续下一步 */
-    guideContinue(): void;
+    /**暂停引导 */
+    guidePause(): void;
     /**
      * 引导恢复，恢复之后会执行下一步引导, 并且必须在syncId为0时调用才有作用
      */
     guideResume(): void;
-    /**强制引导关闭，提供的可以把引导功能关闭的接口，外部调用时，请谨慎 */
-    guideClose(): void;
-    /**强制打开引导, 打开后, 如果有引导会自动执行, 会把强制关闭的引导重新打开 */
-    guideOpen(): void;
-    /**获取引导所有目标节点 */
-    getGuideTargets(): Map<string, IGuideTarget>;
-    /**
-     * 设置开始引导监听
-     * @param listeners 监听回调
-     * @param caller 执行者
-     */
-    setGuideStart(listeners: (guideId: number) => void, caller: any): void;
-    /**
-     * 设置每一步引导完成监听
-     * @param listeners 监听回调
-     * @param caller 执行者
-     */
-    setGuideComplete(listeners: (guideId: number) => void, caller: any): void;
-    /**
-     * 设置引导结束监听，此监听为完成一轮引导(即syncId等于0)时执行
-     * @param listeners 监听回调
-     * @param caller 执行者
-     */
-    setGuideOver(listeners: (guideId: number) => void, caller: any): void;
-    /**
-     * 设置引导完结监听，此监听为完成所有引导时，即引导完全执行完时执行此回调
-     * @param listeners 监听回调
-     * @param caller 执行者
-     */
-    setGuideEnd(listeners: Function, caller: any): void;
     /**在手指引导之后执行下一步, 在某些情况下可能会需要调用, 通常调用此接口的可能性不大 */
-    nextStepFingerGuide(): void;
-
-
-    /**********************************一般不需要外部调用的接口****************************/
-    againExecute(scope: number): void;
-    setAgainExecute(againExecute: boolean): void;
+    execNextStepAfterFingerGuide(): void;
     /**
-     * 增加遮罩节点和引导层
-     * @param mask 
-     * @param layer
+     * 注册引导执行回调
+     * @param type 事件类型
+     * @param listeners 监听回调
+     * @param caller 事件注册者
      */
-    addGuideMaskAndLayer(mask: Node, layer: Node): void;
+    on(type: string, listeners: (guideId: number) => void, caller: any): void;
     /**
-     * 把引导目标的父节点设置为遮罩节点
-     * @param child 
+     * 注销引导执行回调
+     * @param type 事件类型
+     * @param listeners 监听回调
+     * @param caller 事件注册者
      */
-    addChildToGuideLayer(child: Node): void;
-    /**
-     * 移动到指定父节点下
-     * @param target 
-     * @param parent 
-     */
-    removeToParent(target: Node, parent: Node): void;
-    /**新手引导启动 */
-    guideLaunch(): void;
-    /**
-     * 检索所有高亮节点
-     * @param guideId 
-     */
-    searchLightTarget(guideId: number): boolean;
-    /**隐藏阻塞事件层 */
-    hideBlockInputLayer(): void;
-    /**阻塞所有触摸, 不需要外部调用 */
-    blockTouch(): void;
-    /**在切换UI时执行下一步引导 */
-    nextGuideInSwitchUI(): void;
-    /**在当前UI上执行下一步引导 */
-    nextGuideInCurrUI(): void;
-    /**获取引导目标的位置 */
-    getTargetPosition(): Vec3[];
-    /**
-     * 设置引导节点的位置
-     * @param guide 
-     * @param pos 
-     */
-    setGuidePosition(guide: Node, pos: Vec2): void;
-    /**
-     * 设置引导文本的位置
-     * @param guideComponent 引导组件
-     * @param text 文本节点
-     */
-    setTextPos(guideComponent: Component, text: Node): void;
-    /**
-     * 设置手指移动速度
-     * @param speed 
-     */
-    setFingerSpeed(speed: number): void;
+    off(type: string, listeners: Function, caller: any): void;
 }
 
 /**********************************************************************************/

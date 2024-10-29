@@ -4,12 +4,12 @@ import { Mediator } from "../puremvc";
 import { Register } from "../Register/Register";
 import { utils, UUID } from "../utils";
 import { Assert } from "../exceptions/Assert";
-import { IBaseView, ILoader, IRegister, IScene, ISceneManager } from "../lib.cck";
+import { IBaseLayout, ILoader, IRegister, IScene, ISceneManager } from "../lib.cck";
 import { director, ISchedulable, Node, resources, Scene, Scheduler } from "cc";
 import { Res } from "../res/Res";
 import { SceneEvent, SceneType } from "./AppEnum";
 import { EventSystem } from "../event";
-import { CCBaseView } from "./CCBaseView";
+import { CCBaseLayout } from "./CCBaseLayout";
 
 
 /**
@@ -22,7 +22,7 @@ import { CCBaseView } from "./CCBaseView";
  * description: 负责游戏场景的加载，跳转，释放，回退的管理。游戏中场景的跳转，应该写在其子类里，以方便维护，每一个场景都要构建一个子类，用以管理该场景。
  *              必要时，需要指定场景所在的资源包，即便场景资源所在的资源包为resources，也要指定，指定资源包的方式是通过bundle装饰器来指定。
  */
-export class SceneBase<T extends IBaseView> extends Mediator implements IScene, ISchedulable {
+export class SceneBase<T extends IBaseLayout> extends Mediator implements IScene, ISchedulable {
     private _id: string;
     private _uuid: string;
     private _fromAssetBundle: boolean;
@@ -132,7 +132,7 @@ export class SceneBase<T extends IBaseView> extends Mediator implements IScene, 
     public initView(scene: Scene) {
         this._scene = scene;
         this._canvas = this._scene.getChildByName("Canvas");
-        const components = this.canvas.getComponents(CCBaseView);
+        const components = this.canvas.getComponents(CCBaseLayout);
         if (components.length > 0) {
             this.setViewComponent(components[0]);
         }

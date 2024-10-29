@@ -104,15 +104,15 @@ export  class GuideText extends Component {
         }
     }
 
-    public executeGuide() {
-        Debug.log('[GuideText] executeGuide');
+    public execGuide() {
+        this.log(this.execGuide, "开始执行文本引导！");
         this._charIndex = 0;
         this._timeout = 0;
         this.node.active = true;
         this.tip.active = false;
         this._playText = true;
         this.storageGuideData();
-        this._descript = GuideManager.instance.guideInfo.descript;
+        this._descript = GuideManager.instance.guideAction.descript;
         let is: boolean = utils.isNull(this._descript) || utils.isUndefined(this._descript) || this._descript === 'null';
         is && (this._descript = '');
         this.text.getComponent(Label).string = '';
@@ -129,10 +129,14 @@ export  class GuideText extends Component {
     //暂存引导相关数据
     private storageGuideData() {
         this._lightTargets = GuideManager.instance.lightTargets;
-        Debug.log('文本引导高亮节点', this._lightTargets);
+        this.log(this.storageGuideData, "文本引导高亮节点", this._lightTargets);
     }
 
-    update (dt) {
+    private log(fn: Function, ...subst: any[]) {
+        Debug.log(utils.StringUtil.format("[GuideText:%s]", fn.name), ...subst);
+    }
+
+    update (dt: number) {
         if (!this._playText) return;
         this._timeout += dt;
         if (this._timeout >= this.duration) {

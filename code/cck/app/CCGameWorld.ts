@@ -175,8 +175,8 @@ export class CCGameWorld extends Facade implements IGameWorld, ISchedulable {
      * 在原生平台，它对应的是应用被切换到前台事件。
      */
     protected onForeground(): void{}
-    /**可以打开WinForm */
-    public canOpenWinForm(accessId: string): boolean { return true; }
+    /**可以打开Window */
+    public canOpenWindow(accessId: string): boolean { return true; }
     /**每一帧刷新的回调 */
     update(dt: number): void {}
 }

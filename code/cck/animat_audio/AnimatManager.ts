@@ -51,7 +51,7 @@ export class Animat {
     public target(node: Node) {
         if (!node) {
             this._status = "rejected";
-            let res = typeof node;
+            const res = typeof node;
             this._err = new Error('目标节点this._target为' + res+'!');
             this.callRejected();
         }
@@ -390,11 +390,14 @@ export class Animat {
     }
 
     /**捕获播放异常的方法，会给回调返回错误信息 */
-    public catch(rejected: (e: Error) => void): void {
-        // if (this._status === "rejected") {
-        //     rejected(this._err);
-        // }
-        this._rejected = rejected;
+    public catch(rejected: (e: Error) => void): Animat {
+        if (this._status === "rejected") {
+            SAFE_CALLBACK(rejected, this._err);
+        }
+        else {
+            this._rejected = rejected;
+        }
+        return this;
     }
 
     private callRejected() {

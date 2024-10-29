@@ -1,8 +1,8 @@
 import { AESCBC } from "./AESCBC";
 import { AESCTR } from "./AESCTR";
 import { AESGCM } from "./AESGCM";
-import { RSAOAEP } from "./RSAOAEP";
 import { Encode, IAlgorithm } from "./EncryptAlgorithm";
+import { RSAOAEP } from "./RSAOAEP";
 import { Md5 } from "./md5";
 
 
@@ -45,10 +45,20 @@ export class Encrypt {
         }
     }
 
+    /**
+     * 数据加密
+     * @param data 需要加密的字符串数据
+     * @returns 
+     */
     public static async encrypt(data: string) {
         return this._algorithm.encrypt(data);
     }
 
+    /**
+     * 数据解密
+     * @param encode 需要加密的字符串数据
+     * @returns 
+     */
     public static async decrypt(encode: Encode) {
         return this._algorithm.decrypt(encode);
     }

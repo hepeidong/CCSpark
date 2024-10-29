@@ -10,7 +10,7 @@ import { TouchEffect } from "./TouchEffect";
 import { Assert } from "../exceptions/Assert";
 import { js, Node } from "cc";
 import { app } from "../app";
-import { Type } from "./UIEnum";
+import { UIType } from "./UIType";
 import { EventSystem } from "../event";
 import { GameWorldEvent, SceneEvent } from "../app/AppEnum";
 import { getPriority } from "../util";
@@ -36,11 +36,11 @@ export class WindowManager {
         this._windowLayer = new WindowLayer();
         this._managers = [];
 
-        this._managers[Type.ROOT] = new RootManager(true, this._windowLayer);
-        this._managers[Type.DIALOG] = new DialoglManager(true, this._windowLayer);
-        this._managers[Type.ACTIVITY] = new ActivityManager(true, this._windowLayer);
-        this._managers[Type.TOAST] = new ToastManager(false, this._windowLayer);
-        this._managers[Type.TOP] = new TopManager(true, this._windowLayer);
+        this._managers[UIType.ROOT_LAYER] = new RootManager(true, this._windowLayer);
+        this._managers[UIType.DIALOG_LAYER] = new DialoglManager(true, this._windowLayer);
+        this._managers[UIType.ACTIVITY_LAYER] = new ActivityManager(true, this._windowLayer);
+        this._managers[UIType.TOAST_LAYER] = new ToastManager(false, this._windowLayer);
+        this._managers[UIType.TOP_LAYER] = new TopManager(true, this._windowLayer);
 
         this._touchEffect.initEffectAsset(app.game.sceneManager.getTouchEffectTemp());
         EventSystem.event.on(SceneEvent.CLICK_MASK, this, this.onClickMask);
@@ -74,7 +74,7 @@ export class WindowManager {
     private initWindowLayer(canvas: Node, hasTouchEffect: boolean) {
         this._windowLayer.init(canvas, this._uiLayer);
         if (hasTouchEffect) {
-            this._touchEffect.init();
+            this._touchEffect.init(this._uiLayer);
         }
     }
 
@@ -154,7 +154,7 @@ export class WindowManager {
      * @param disable 为true，则禁用冒泡显示
      */
     public disableBubble(disable: boolean) {
-        const manager = this._managers[Type.TOAST] as ToastManager;
+        const manager = this._managers[UIType.TOAST_LAYER] as ToastManager;
         manager.disableBubble(disable);
     }
 
@@ -166,8 +166,8 @@ export class WindowManager {
      */
      public push(priority: number, accessId: string) {
         const view: IWindowBase = this.retrieveView(accessId);
-        if (view.getViewType() === Type.ACTIVITY) {
-            const manager = this._managers[Type.ACTIVITY] as ActivityManager;
+        if (view.getViewType() === UIType.ACTIVITY_LAYER) {
+            const manager = this._managers[UIType.ACTIVITY_LAYER] as ActivityManager;
             manager.setPriority(priority, view);
         }
     }
@@ -177,7 +177,7 @@ export class WindowManager {
      * 用于其他类型窗口没用作用和效果
      */
     public pop() {
-        const manager = this._managers[Type.ACTIVITY] as ActivityManager;
+        const manager = this._managers[UIType.ACTIVITY_LAYER] as ActivityManager;
         const activity = manager.popActivity();
         if (activity) {
             if (!app.game.hasMediator(activity.view.accessId)) {
@@ -237,12 +237,12 @@ export class WindowManager {
 
     public exitView(view: IWindowBase) {
         const type = view.getViewType();
-        if (type === Type.TOAST) {
+        if (type === UIType.TOAST_LAYER) {
             //把Toast类型UI放回对象池
             const manager = this._managers[type] as ToastManager;
             manager.put(view);
         }
-        else if (type === Type.ACTIVITY) {
+        else if (type === UIType.ACTIVITY_LAYER) {
             //按照出栈方式以此弹出活动面板
             this.pop();
         }
@@ -287,7 +287,7 @@ export class WindowManager {
     }
 
     public shiftMask() {
-        for (let i: number = Type.TOP; i >= 1; --i) {
+        for (let i: number = UIType.TOP_LAYER; i >= 1; --i) {
             let win: IWindowBase = this._managers[i].getView();
             if (win) {
                 //Toast类型的视图是不会存在遮罩的

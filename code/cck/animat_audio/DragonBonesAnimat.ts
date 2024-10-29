@@ -28,8 +28,8 @@ export  class DragonBonesAnimat extends AnimatBase<cck_animat_dragonBonesAnimat_
         if (!this._selfDB) {
             this._status = 'rejected';
             this._err = new Error('该结点没有 ArmatureDisplay 组件！');
+            this.callRejected();
         }
-        this._selfDB.playAnimation
     }
 
     public static stopAll(): void {
@@ -41,9 +41,11 @@ export  class DragonBonesAnimat extends AnimatBase<cck_animat_dragonBonesAnimat_
     }
 
     public addCallback(callback: cck_animat_resolved_type): void {
-        let len: number = this._animatList.length;
-        const animat = this._animatList.back(len - 1);
-        animat.callbacks.push(callback);
+        if (this._animatList.length > 0) {
+            const len: number = this._animatList.length;
+            const animat = this._animatList.back(len - 1);
+            animat.callbacks.push(callback);
+        }
     }
 
     public addAnimatProps(props: IDragonBonesAnimat): void {
@@ -62,6 +64,7 @@ export  class DragonBonesAnimat extends AnimatBase<cck_animat_dragonBonesAnimat_
         } catch (error) {
             this._status = 'rejected';
             this._err = error;
+            this.callRejected();
         }
     }
 
@@ -103,6 +106,7 @@ export  class DragonBonesAnimat extends AnimatBase<cck_animat_dragonBonesAnimat_
         } catch (error) {
             this._status = 'rejected';
             this._err = error;
+            this.callRejected();
         }
         return this;
     }
@@ -117,6 +121,9 @@ export  class DragonBonesAnimat extends AnimatBase<cck_animat_dragonBonesAnimat_
     public catch(reject: (e: Error) => void): void {
         if (this._status === 'rejected') {
             SAFE_CALLBACK(reject, this._err);
+        }
+        else {
+            this._rejected = reject;
         }
     }
 

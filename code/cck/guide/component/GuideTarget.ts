@@ -1,5 +1,5 @@
 import { Button, Node } from "cc";
-import { IContainer, IGuideConfig, IGuideTarget } from "../../lib.cck";
+import { IGuideTarget } from "../../lib.cck";
 import { GuideType } from "../GuideEnum";
 import { GuideManager } from "../GuideManager";
 import { WidgetID } from "../WidgetID";
@@ -7,7 +7,7 @@ import { WidgetID } from "../WidgetID";
 export class GuideTarget implements IGuideTarget {
     public target: Node = null;
     public targetId: string;
-    public guideIds: number[];
+    public guideIds: string[];
 
     constructor() {
         this.guideIds = [];
@@ -16,14 +16,14 @@ export class GuideTarget implements IGuideTarget {
     public init() {
         this.target.attr({guideTouchRegist: false});
         this.targetId = this.target.getComponent(WidgetID).ID;
-        let keys: number[] = GuideManager.instance.guideFile.keys as number[];
-        let guideFile: IContainer<IGuideConfig> = GuideManager.instance.guideFile;
+        const keysIterrator = GuideManager.instance.guideGroup.keys();
+        const guideGroup = GuideManager.instance.guideGroup;
         let isFingerGuide: boolean = false;
-        for (let k of keys) {
-            let index: number = 0;
-            while(index < guideFile.length) {
-                if (guideFile.get(k).targetId[index++] === this.targetId) {
-                    isFingerGuide = guideFile.get(k).guideType === GuideType.FINGER;
+        for (let k of keysIterrator) {
+            const guideAction = guideGroup.get(k);
+            for (const id of guideAction.targetId) {
+                if (id === this.targetId) {
+                    isFingerGuide = guideGroup.get(k).guideType === GuideType.FINGER;
                     break;
                 }
             }

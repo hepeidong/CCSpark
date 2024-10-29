@@ -141,7 +141,7 @@ export  class StringUtil {
      * replace("这是一个{AA}", "BB", true, "{}"); //返回结果是"这是一个{BB}"
      */
     public static replace(str: string, replaceValue: string, isKeep: boolean = false, parentheses: string = "{}") {
-        let exp: any;
+        let exp: RegExp;
         if (parentheses === "{}") {
             exp = /\{[^\}]+\}/;
             replaceValue = isKeep? `{${replaceValue}}` : replaceValue;
@@ -460,7 +460,7 @@ export  class StringUtil {
      */
     public static getLabelLen(str: string): number {
         return this.getStringLen(str, (s: string) => {
-            if (encodeURIComponent(s).length > 4) {
+            if (escape(s).length > 4) {
                 return 1;
             }
             else return 0.5;
@@ -488,7 +488,7 @@ export  class StringUtil {
         let value: string;
         let str = window.location.href; // 取得整个地址栏
         let num = str.indexOf('?');
-        str = str.substring(num + 1); // 取得所有参数
+        str = str.substring(num + 1); // 取得所有参数 
 
         const arr = str.split('&'); // 各个参数放到数组里
         for (let i = 0; i < arr.length; i++) {

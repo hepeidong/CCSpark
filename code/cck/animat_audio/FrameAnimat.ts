@@ -25,6 +25,7 @@ export  class FrameAnimat extends AnimatBase<cck_animat_frameAnimat_type> {
         if (!this._animator) {
             this._status = 'rejected';
             this._err = new Error('该节点没有Animation组件!');
+            this.callRejected();
         }
     }
 
@@ -37,9 +38,11 @@ export  class FrameAnimat extends AnimatBase<cck_animat_frameAnimat_type> {
     }
 
     public addCallback(callback: cck_animat_resolved_type): void {
-        let len: number = this._animatList.length;
-        const animat = this._animatList.back(len - 1);
-        animat.callbacks.push(callback);
+        if (this._animatList.length > 0) {
+            const len: number = this._animatList.length;
+            const animat = this._animatList.back(len - 1);
+            animat.callbacks.push(callback);
+        }
     }
 
     public addAnimatProps(props: IFrameAnimat): void {
@@ -58,6 +61,7 @@ export  class FrameAnimat extends AnimatBase<cck_animat_frameAnimat_type> {
         } catch (error) {
             this._status = 'rejected';
             this._err = error;
+            this.callRejected();
         }
     }
 
@@ -103,6 +107,7 @@ export  class FrameAnimat extends AnimatBase<cck_animat_frameAnimat_type> {
         } catch (error) {
             this._status = 'rejected';
             this._err = error;
+            this.callRejected();
         }
         return this;
     }
@@ -120,6 +125,9 @@ export  class FrameAnimat extends AnimatBase<cck_animat_frameAnimat_type> {
     public catch(reject: (e: Error) => void): void {
         if (this._status === 'rejected') {
             SAFE_CALLBACK(reject, this._err);
+        }
+        else {
+            this._rejected = reject;
         }
     }
 

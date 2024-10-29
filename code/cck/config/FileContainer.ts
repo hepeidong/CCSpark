@@ -78,9 +78,6 @@ export class FileContainer<T> implements IContainer<T> {
     }
 
     contains(id: number|string): boolean {
-        if (this[id] !== null && this[id] !== undefined) {
-            return true;
-        }
-        return false;
+        return id in this;
     }
 }

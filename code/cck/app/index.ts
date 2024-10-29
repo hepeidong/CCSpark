@@ -5,10 +5,10 @@ import { MacroCommand } from "../puremvc";
 import { SimpleCommand } from "../puremvc";
 import { CCDocument } from "./CCDocument";
 import { Assert } from "../exceptions/Assert";
-import { Constructor, IBaseView, IEventBody } from "../lib.cck";
+import { Constructor, IBaseLayout, IEventBody } from "../lib.cck";
 import { js } from "cc";
 import { Platform, SceneType } from "./AppEnum";
-import { CCBaseView } from "./CCBaseView";
+import { CCBaseLayout } from "./CCBaseLayout";
 import { DataSave } from "./file-save";
 
 
@@ -77,7 +77,7 @@ export class app {
 
     /**
      * 打开指定索引的存档记录，只有调用此函数，存档数据才能被使用
-     * @param index 需要打开的存档数据的索引，此为获取的存档数据的数组的索引
+     * @param index 需要打开的存档数据的索引，此为获取的存档数据的数组的索引，一般为单机游戏中的章回存档数据
      */
     public static openArchive(index: number) {
         return DataSave.instance.openArchive(index);
@@ -127,11 +127,11 @@ export class app {
 }
 
 export namespace app {
-    export class BaseView extends CCBaseView {
+    export class BaseLayout extends CCBaseLayout {
         protected onEvent(body: IEventBody) {}
     }
     export class GameWorld extends CCGameWorld {}
-    export class Scene<T extends IBaseView = any> extends SceneBase<T> {}
+    export class Scene<T extends IBaseLayout = any> extends SceneBase<T> {}
     export class Command extends SimpleCommand {
         private static _ref: number = 0;
 

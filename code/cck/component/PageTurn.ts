@@ -1,6 +1,9 @@
 import { Component, Enum, EventTouch, instantiate, Node, Prefab, tween, UITransform, v3, Vec2, _decorator } from "cc";
 import { EventSystem } from "../event";
 import { utils } from "../utils";
+import { Vec3 } from "cc";
+
+const _vec3Temp = new Vec3();
 
 enum PageEvent {
     PAGE_INIT = 'page_init',
@@ -136,7 +139,9 @@ export  class PageTurn extends Component {
         for (let i: number = 0; i < 3; ++i) {
             let newNode: Node = instantiate(this.page);
             this.content.addChild(newNode);
-            newNode.position.set(newNode.position.x, 0);
+            _vec3Temp.x = newNode.position.x;
+            _vec3Temp.y = 0;
+            newNode.position = _vec3Temp;
             this.initPagePos(i, newNode);
             this._pageNodes.push(newNode);
         }
@@ -145,30 +150,42 @@ export  class PageTurn extends Component {
     private initPagePos(index: number, page: Node) {
         const nodeUI = this.node.getComponent(UITransform);
         if (this.pageType === PageType.HORIZONTAL) {
-            page.position.set(nodeUI.width * index, 0);
+            _vec3Temp.x = nodeUI.width * index;
+            _vec3Temp.y = 0;
+            page.position = _vec3Temp;
         }
         else if (this.pageType === PageType.VERTICAL) {
-            page.position.set(0, -nodeUI.height * index);
+            _vec3Temp.x = 0;
+            _vec3Temp.y = -nodeUI.height * index;
+            page.position = _vec3Temp;
         }
     }
 
     private setToLefPagePos(page: Node) {
         const nodeUI = this.node.getComponent(UITransform);
         if (this.pageType === PageType.HORIZONTAL) {
-            page.position.set(nodeUI.width * this._pageIndex + nodeUI.width, page.position.y);
+            _vec3Temp.x = nodeUI.width * this._pageIndex + nodeUI.width;
+            _vec3Temp.y = page.position.y;
+            page.position = _vec3Temp;
         }
         else if (this.pageType === PageType.VERTICAL) {
-            page.position.set(page.position.x, nodeUI.height * this._pageIndex - nodeUI.height);
+            _vec3Temp.x = page.position.x;
+            _vec3Temp.y = nodeUI.height * this._pageIndex - nodeUI.height;
+            page.position = _vec3Temp;
         }
     }
 
     private setToRightPagePos(page: Node) {
         const nodeUI = this.node.getComponent(UITransform);
         if (this.pageType === PageType.HORIZONTAL) {
-            page.position.set(nodeUI.width * this._pageIndex - nodeUI.width, page.position.y);
+            _vec3Temp.x = nodeUI.width * this._pageIndex - nodeUI.width;
+            _vec3Temp.y = page.position.y;
+            page.position = _vec3Temp;
         }
         else if (this.pageType === PageType.VERTICAL) {
-            page.position.set(page.position.x, nodeUI.height * this._pageIndex + nodeUI.height);
+            _vec3Temp.x = page.position.x;
+            _vec3Temp.y = nodeUI.height * this._pageIndex + nodeUI.height;
+            page.position = _vec3Temp;
         }
     }
 

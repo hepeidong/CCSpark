@@ -24,7 +24,7 @@ export class DataManager {
 
     /**
      * 加载配置表数据
-     * @param path 配置表本地路径
+     * @param path 配置表本地目录的路径
      * @param nameOrUrl 资源包名或者路径
      * @param onComplete 加载成功回调
      */
@@ -41,8 +41,10 @@ export class DataManager {
                         Debug.error("配置表加载失败", err);
                         return;
                     }
-                    let jsonData = assets[0].json;
-                    this.initFileData(jsonData);
+                    for (const asset of assets) {
+                        let jsonData = asset.json;
+                        this.initFileData(jsonData);
+                    }
                     SAFE_CALLBACK(onComplete);
                 });
             }).catch(e => {
@@ -57,8 +59,10 @@ export class DataManager {
                     Debug.error('配置表加载失败', err);
                     return;
                 }
-                let jsonData = assets[0].json;
-                this.initFileData(jsonData);
+                for (const asset of assets) {
+                    let jsonData = asset.json;
+                    this.initFileData(jsonData);
+                }
                 SAFE_CALLBACK(onComplete);
             });
         }

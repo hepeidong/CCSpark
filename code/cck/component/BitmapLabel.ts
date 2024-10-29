@@ -3,6 +3,12 @@ import { cck_bitLblImage_type } from "../lib.cck";
 import { SAFE_CALLBACK } from "../Define";
 import { utils } from "../utils";
 import { LabelRemove } from "./LabelRemove";
+import { Vec3 } from "cc";
+import { math } from "cc";
+
+
+const _vec3Temp = new Vec3();
+const _rectTemp = new math.Rect();
 
 const defaultFonSize: number = 30;
 
@@ -335,28 +341,36 @@ export  class BitmapLabel extends Component {
             newSF.texture = this._texture;
             if (utils.StringUtil.isChinese(e)) {
                 let cnIndex: number = this._cnCharSplit.indexOf(e);//中文字符索引
-                let x: number =  this.getCharX(this._cnCharSplit, this._charSplit, this._spCharSplit, this._maxCharLen, this._maxSPCharLen, this.fontChar.cnFontW, cnIndex);
+                _rectTemp. x =  this.getCharX(this._cnCharSplit, this._charSplit, this._spCharSplit, this._maxCharLen, this._maxSPCharLen, this.fontChar.cnFontW, cnIndex);
                 cnIndex++;
-                newSF.rect.set(x, 0, this.fontChar.cnFontW, this.fontH);
+                _rectTemp.y = 0;
+                _rectTemp.width = this.fontChar.cnFontW;
+                _rectTemp.height = this.fontH;
+                newSF.rect = _rectTemp;
                 imageList.push({spacing: this.spacingCN, sf: newSF});
             }
             else if (!this.isSpChar(e) && !utils.StringUtil.isChinese(e)) {
                 let index: number = this._charSplit.indexOf(e);
-                let x: number = this.getCharX(this._charSplit, this._cnCharSplit, this._spCharSplit, this._maxCNCharLen, this._maxSPCharLen, this._charLen, index);
+                _rectTemp. x = this.getCharX(this._charSplit, this._cnCharSplit, this._spCharSplit, this._maxCNCharLen, this._maxSPCharLen, this._charLen, index);
               
                 //处理1的特殊情况的矩形区域
                 if (e === '1') {
                     let off: number = this._charLen * index * 0.1;
                     // x = x - off;
                 }
-                
-                newSF.rect.set(x, 0, this._charLen, this.fontH);
+                _rectTemp.y = 0;
+                _rectTemp.width = this._charLen;
+                _rectTemp.height = this.fontH;
+                newSF.rect = _rectTemp;
                 imageList.push({spacing: this.spacing, sf: newSF});
             }
             else {
                 let spIndex: number = this._spCharSplit.indexOf(e);
-                let x: number = this.getCharX(this._spCharSplit, this._charSplit, this._cnCharSplit, this._maxCharLen, this._maxCNCharLen, this._spCharLen, spIndex);
-                newSF.rect.set(x, 0, this._spCharLen, this.fontH);
+                _rectTemp. x = this.getCharX(this._spCharSplit, this._charSplit, this._cnCharSplit, this._maxCharLen, this._maxCNCharLen, this._spCharLen, spIndex);
+                _rectTemp.y = 0;
+                _rectTemp.width = this._spCharLen;
+                _rectTemp.height = this.fontH;
+                newSF.rect = _rectTemp;
                 imageList.push({spacing: this.spacing + this._spCharLen, sf: newSF});
             }
         }
@@ -412,15 +426,16 @@ export  class BitmapLabel extends Component {
                 let fontCount: number = Math.floor(nodeUI.width / ui.width);
                 let yScale: number = Math.ceil(this._labelNode.children.length / fontCount);
                 // 计算子节点y轴的坐标
-                const y = -this.lineHeight * yScale / 2;
+                _vec3Temp.y = -this.lineHeight * yScale / 2;
                 //计算处于该行上的第几个字体,算出来的是数组下标,以0开头
                 let index: number = i - Math.floor((i) / fontCount) * fontCount;
-                const x = this.getChildX(index, imageList[index].spacing);
-                this._labelNode.children[i].position.set(x, y);
+                _vec3Temp.x = this.getChildX(index, imageList[index].spacing);
+                this._labelNode.children[i].position = _vec3Temp;
             }
             else {
-                const x = this.getChildX(i, imageList[i].spacing);
-                this._labelNode.children[i].position.set(x, this._labelNode.children[i].position.y);
+                _vec3Temp.x = this.getChildX(i, imageList[i].spacing);
+                _vec3Temp.y = this._labelNode.children[i].position.y;
+                this._labelNode.children[i].position = _vec3Temp;
             }
         }
         
@@ -452,7 +467,9 @@ export  class BitmapLabel extends Component {
         if (this.horizontalAlign === HorizontalAlign.CENTRE) {
             labelUI.anchorX = 0.5;
             let x: number = -(labelUI.width / 2);
-            this._labelNode.position.set((x === -Infinity || x === 0) ? 0 : x, this._labelNode.position.y);
+            _vec3Temp.x = (x === -Infinity || x === 0) ? 0 : x;
+            _vec3Temp.y = this._labelNode.position.y;
+            this._labelNode.position = _vec3Temp;
         }
         else if (this.horizontalAlign === HorizontalAlign.LEFT) {
             labelUI.anchorX = 0;

@@ -9,6 +9,7 @@ export class CCObjectPool<T> {
 
 
     public size(): number { return this._pool.length; }
+    public has(): boolean { return this._pool.length > 0; }
     public get onClearHandler(): EventSystem.Signal<(obj: T) => void, CCObjectPool<T>> { 
         if (!this._onClearHandler) {
             this._onClearHandler = new EventSystem.Signal(this);

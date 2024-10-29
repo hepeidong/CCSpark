@@ -1,21 +1,43 @@
-import { UIManager } from "./UIManager";
-import { CCWinView } from "./CCWinView";
-import { GuideView } from "./GuideView";
+import { CCGameLayout } from "./CCGameLayout";
+import { CCGuideWindow } from "./CCGuideWindow";
 import { WindowManager } from "./WindowManager";
-import { CCWinForm } from "./CCWinForm";
-import { IContainer, IUIControlConfig, IWindowBase, IWinView } from "../lib.cck";
-import { Type } from "./UIEnum";
+import { CCGameWindow } from "./CCGameWindow";
+import { IWindowBase, IGameLayout } from "../lib.cck";
+import { UIType } from "./UIType";
 import { Layers } from "cc";
 
 
-export class ui {
-    public static readonly Type = Type;
-}
-
 export namespace ui {
-    export class WinView extends CCWinView {}
-    export class UIGuide extends GuideView {}
-    export class WinForm<T extends IWinView> extends CCWinForm<T> {}
+    /**UI类型 */
+    export enum Type {
+        /**不是任何类型的视图，非法的选项，不可选择 */
+        NONE = UIType.NONE,
+        /**根视图 */
+        ROOT_LAYER = UIType.ROOT_LAYER,
+        /**普通视图 */
+        DIALOG_LAYER = UIType.DIALOG_LAYER,
+        /**活动视图 */
+        ACTIVITY_LAYER = UIType.ACTIVITY_LAYER,
+        /**冒泡提示视图 */
+        TOAST_LAYER = UIType.TOAST_LAYER,
+        /**最顶层视图 */
+        TOP_LAYER = UIType.TOP_LAYER
+    }
+
+    /**
+     * 游戏UI布局类，继承自Component，游戏中的窗口UI组件应继承它
+     */
+    export class GameLayout extends CCGameLayout {}
+    /**
+     * 引导窗口类，游戏中的引导操作窗口应该继承它。
+     * 需注意，预制体的Layer必须设置为UI_2D，如果无法显示，请先检查Layer是否是UI_2D
+     */
+    export class GuideWindow extends CCGuideWindow {}
+    /**
+     * 游戏中的窗口类，游戏中的UI页面应该继承它。
+     * 需注意，预制体的Layer必须设置为UI_2D，如果无法显示，请先检查Layer是否是UI_2D
+     */
+    export class GameWindow<T extends IGameLayout> extends CCGameWindow<T> {}
 
 
     /**
@@ -43,7 +65,7 @@ export namespace ui {
     }
 
     /**
-     * 获取当前游戏中打开了所有窗户的总个数
+     * 获取当前游戏中打开的所有窗户的总个数
      * @returns 返回个数
      */
     export function getOpenWinCount(): number {
@@ -51,9 +73,9 @@ export namespace ui {
     }
 
     /**
-     * 把ACTIVITY活动类型的UI窗口压入管理活动窗口的优先队列中，注意，此接口只能用于ACTIVITY活动类型的窗口，
-     * 用于其他类型窗口没用作用和效果
-     * @param priority 活动面板的优先级，优先级越大，就越早弹出
+     * 把ACTIVITY活动类型的UI窗口压入管理活动窗口的优先队列中。
+     * 注意，此接口只能用于ACTIVITY活动类型的窗口，用于其他类型窗口没有作用
+     * @param priority 活动面板的优先级，优先级越大，就越早弹出。
      * @param accessId 活动面板的访问id
      */
      export function push(priority: number, accessId: string) {
@@ -61,15 +83,15 @@ export namespace ui {
      }
 
     /**
-     * ACTIVITY类型的活动窗口出栈，会根据设定的优先级大小，优先弹出优先级大的窗口，注意，此接口只能用于ACTIVITY活动类型的窗口，
-     * 用于其他类型窗口没用作用和效果
+     * ACTIVITY类型的活动窗口出栈，会根据设定的优先级大小，优先弹出优先级大的窗口。
+     * 注意，此接口只能用于ACTIVITY活动类型的窗口，用于其他类型窗口没用作用和效果。
      */
     export function pop() {
         WindowManager.instance.pop();
     }
 
     /**
-     * 加载页面
+     * 加载页面，如果想要直接打开页面，请调用 'open()' 接口
      * @param accessId 访问ID
      * @param onProgress 加载进度回调
      * @param onComplete 加载完成回调
@@ -129,42 +151,10 @@ export namespace ui {
      }
 
      /**
-     * 通过访问ID, 获取页面视图对象，此接口用于引导框架
+     * 通过访问ID, 获取页面视图对象
      * @param accessId 访问ID
      */
       export function getView<T extends IWindowBase>(accessId: string) {
         return WindowManager.instance.getView<T>(accessId);
-    }
-
-    /**
-     * 设置ui配置表文件数据，此接口用于引导框架
-     * @param file 
-     */
-    export function setUIConfig(file: IContainer<IUIControlConfig>) {
-        UIManager.instance.setUIConfig(file);
-    }
-
-    /**
-     * 是否为页面视图，此接口用于引导框架
-     * @param uiId 
-     */
-    export function isView(uiId: string): boolean {
-        return UIManager.instance.isView(uiId);
-    }
-
-    /**
-     * 是否为按钮，此接口用于引导框架
-     * @param uiId 
-     */
-    export function isButton(uiId: string): boolean {
-        return UIManager.instance.isButton(uiId);
-    }
-
-    /**
-     * 是否为页面中的某个显示区域，此接口用于引导框架
-     * @param uiId 
-     */
-    export function isPanel(uiId: string): boolean {
-        return UIManager.instance.isPanel(uiId);
     }
 }

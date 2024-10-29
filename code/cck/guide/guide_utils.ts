@@ -1,20 +1,20 @@
 import { Color, Label, Node, Sprite, UIOpacity, UITransform } from "cc";
-import { IGuideConfig } from "../lib.cck";
 import { GuideManager } from "./GuideManager";
 import { setPriority } from "../util";
 
 export function createSprite(name: string) {
-    let newNode: Node = new Node(name);
+    const newNode: Node = new Node(name);
     newNode.addComponent(Sprite);
     return newNode;
 }
 
 export function createText(name: string) {
     let lbNode: Node = new Node(name);
+    lbNode.addComponent(Label);
     const ui = lbNode.getComponent(UITransform);
     ui.width = 100;
     ui.height = 40;
-    let label =  lbNode.addComponent(Label);
+    const label =  lbNode.getComponent(Label);
     label.cacheMode = Label.CacheMode.NONE;
     label.overflow = Label.Overflow.SHRINK;
     label.color = Color.BLACK;
@@ -41,30 +41,37 @@ export function restoreParent(target: Node, zIndex: number, parent: Node) {
 
 /**获取下一步引导 */
 export function getNextGuideId() {
-    let guideId: number;
-    if (!GuideManager.instance.isGuideLaunched) {
-        let firstGuide: number = GuideManager.instance.guideFile.get(GuideManager.instance.guideFile.keys[0]).key;
-        guideId = GuideManager.instance.guideFile.get(GuideManager.instance.guideId) ? GuideManager.instance.guideFile.get(GuideManager.instance.guideId).againId : firstGuide;
-        guideId = guideId === 0 ? GuideManager.instance.guideId + 1 : guideId;
+    let guideId: string;
+    const syncGuideId = GuideManager.instance.guideId;
+    if (GuideManager.instance.guideGroup.has(syncGuideId)) {
+        guideId = GuideManager.instance.guideGroup.get(syncGuideId).syncId;
     }
     else {
-        let guide = GuideManager.instance.guideFile.get(GuideManager.instance.guideId);
-        if (!guide) {
-            guide = GuideManager.instance.guideFile.get(GuideManager.instance.guideFile.keys[0]);
+        const keyItertor = GuideManager.instance.guideGroup.keys();
+        if (!GuideManager.instance.isGuideLaunched) {
+            for (const key of keyItertor) {
+                //取第一个引导动作的引导id
+                guideId = GuideManager.instance.guideGroup.get(key).guideId;
+                break;
+            }
         }
-        guideId = guide.syncId;
-        guideId = guideId === 0 ? GuideManager.instance.guideId + 1 : guideId;
+        else {
+            for (const key of keyItertor) {
+                //取第一个引导动作的下一步引导id
+                guideId = GuideManager.instance.guideGroup.get(key).syncId;
+                break;
+            }
+        }
     }
     return guideId;
 }
 
-export function addGuideElement(uiId: string, target: Node, scope: number) {
-    let guideId: number;
-        guideId = getNextGuideId();
-        if (guideId > 0) {
-            let guideInfo: IGuideConfig = GuideManager.instance.guideFile.get(guideId);
-            if (guideInfo && guideInfo.uiId === uiId) {
-                GuideManager.instance.addGuideView(uiId, target, scope);
-            }
+export function addGuideElement(uiId: string, target: Node) {
+    const guideId: string = getNextGuideId();
+    if (guideId.length > 0) {
+        let guideAction = GuideManager.instance.guideGroup.get(guideId);
+        if (guideAction && guideAction.uiId === uiId) {
+            GuideManager.instance.addGuideView(uiId, target, guideAction.showType);
         }
+    }
 }

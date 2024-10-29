@@ -1,6 +1,4 @@
 import { Asset, assetManager, Node, resources, Sprite } from "cc";
-import { cck_initial_asset_info, cck_loader_AssetType } from "../lib.cck";
-import { SAFE_CALLBACK } from "../Define";
 import { AutoReleasePool, PoolManager } from "./AutoReleasePool";
 import { Loader } from "./Loader";
 

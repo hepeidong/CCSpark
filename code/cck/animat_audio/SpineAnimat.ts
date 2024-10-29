@@ -26,6 +26,7 @@ export  class SpineAnimat extends AnimatBase<cck_animat_spineAnimat_type> {
         if (!this._skeleton) {
             this._status = 'rejected';
             this._err = new Error('该结点没有 Skeleton 组件！');
+            this.callRejected();
         }
         else {
             this.registerEvent();
@@ -51,9 +52,11 @@ export  class SpineAnimat extends AnimatBase<cck_animat_spineAnimat_type> {
     }
 
     public addCallback(callback: cck_animat_resolved_type) {
-        let len: number = this._animatList.length;
-        const animat = this._animatList.back(len - 1);
-        animat.callbacks.push(callback);
+        if (this._animatList.length > 0) {
+            const len: number = this._animatList.length;
+            const animat = this._animatList.back(len - 1);
+            animat.callbacks.push(callback);
+        }
     }
 
     public setSkeletonData(data: sp.SkeletonData) {
@@ -72,6 +75,7 @@ export  class SpineAnimat extends AnimatBase<cck_animat_spineAnimat_type> {
         } catch (error) {
             this._status = 'rejected';
             this._err = error;
+            this.callRejected();
         }
     }
 
@@ -104,6 +108,7 @@ export  class SpineAnimat extends AnimatBase<cck_animat_spineAnimat_type> {
         } catch (error) {
             this._status = 'rejected';
             this._err = error;
+            this.callRejected();
         }
         return this;
     }
@@ -121,6 +126,9 @@ export  class SpineAnimat extends AnimatBase<cck_animat_spineAnimat_type> {
     public catch(reject: (e: Error) => void): void {
         if (this._status === 'rejected') {
             SAFE_CALLBACK(reject, this._err);
+        }
+        else {
+            this._rejected = reject;
         }
     }
 

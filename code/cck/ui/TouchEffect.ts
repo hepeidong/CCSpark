@@ -3,6 +3,7 @@ import { animat } from "../animat_audio";
 import { MAX_PRIORITY } from "../Define";
 import { setPriority } from "../util";
 import { WindowManager } from "./WindowManager";
+import { Debug } from "../Debugger";
 
 const MAX_COUNT = 20;
 
@@ -18,17 +19,42 @@ export class TouchEffect {
         this._pool = new NodePool();
     }
 
-    public init() {
+    public init(uiLayer: number) {
         let touchParent: Node = new Node('touchParent');
-        const ui = touchParent.getComponent(UITransform);
+        touchParent.layer = uiLayer;
+        let ui = touchParent.getComponent(UITransform);
+        if (!ui) {
+            ui = touchParent.addComponent(UITransform);
+        }
         ui.width = 2000;
         ui.height = 2000;
         setPriority(touchParent, MAX_PRIORITY);
         WindowManager.instance.addToTop(touchParent);
+        let overversion: boolean = true; //版本是否超过3.4
+        if (touchParent.eventProcessor) {
+            //版本兼容
+            const touchListener = touchParent.eventProcessor.touchListener;
+            if (touchListener) {
+                overversion = false;
+                touchListener.setSwallowTouches(false);
+            }
+        }
         touchParent.on(Node.EventType.TOUCH_START, (evt: EventTouch) => {
+            if (overversion) {
+                evt.preventSwallow = true;
+            }
             this.play(evt.getUILocation());
         }, this);
-        touchParent['_touchListener'].setSwallowTouches(false);
+        touchParent.on(Node.EventType.TOUCH_END, (evt: EventTouch) => {
+            if (overversion) {
+                evt.preventSwallow = true;
+            }
+        });
+        touchParent.on(Node.EventType.TOUCH_CANCEL, (evt: EventTouch) => {
+            if (overversion) {
+                evt.preventSwallow = true;
+            }
+        });
     }
 
     /**
@@ -59,7 +85,9 @@ export class TouchEffect {
             node.position = _vec3Temp.set(pos.x, pos.y);
             animat(node).defaultClip().onStop(() => {
                 this._pool.put(node);
-            }).play();
+            }).play().catch(err => {
+                Debug.error("触摸特效动画播放异常：", err);
+            });
         }
     }
 }

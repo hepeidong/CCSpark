@@ -7,12 +7,12 @@ export enum GuideNormalEvent {
     AGAIN_EXECUTE = 'again_execute'
 }
 
- /**引导窗口面板类型 */
- export enum Scope {
-    /**部分面板, 附加到其他窗口中的面板, 即以其他窗口为父节点 */
-   CHILD_PANEL,
-   /**整个窗口面板 */
-   PARENT_PANEL
+ /**引导高亮的显示范围 */
+ export enum Scope {    
+   /**整个窗口高亮显示 */
+   ENTIRE_PANEL = 1,
+   /**窗口部分高亮显示，高亮显示的是引导的目标节点  */
+   PARTIAL_PANEL
 }
 /**引导事件类型 */
 export enum EventType {
@@ -21,9 +21,7 @@ export enum EventType {
    /**每一步引导完成 */
    GUIDE_COMPLETE = 'guide_complete',
    /**引导结束 */
-   GUIDE_OVER = 'guide_over',
-   /**没有引导 */
-   GUIDE_NONE = 'guide_none'
+   GUIDE_OVER = 'guide_over'
 }
 /**引导类型 */
 export enum GuideType {

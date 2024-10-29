@@ -9,7 +9,7 @@ import { utils } from "../utils";
 import { Assert } from "../exceptions/Assert";
 import { Asset, Component, instantiate, isValid, js, Node, Prefab, Sprite, Tween } from "cc";
 import { app } from "../app";
-import { Type } from "./UIEnum";
+import { UIType } from "./UIType";
 
 
 /**
@@ -26,7 +26,7 @@ export class WindowBase<T extends Component> extends Mediator implements IWindow
     private _hasMask: boolean;             //是否增加背景遮罩
     private _canClose: boolean;            //是否允许点击弹窗遮罩任意地方关闭
     private _autoRelease: boolean;         //是否自动释放资源
-    private _node: Node;                //视图节点
+    private _node: Node;                   //视图节点
     private _viewType: number;             //控制器类型
     private _winModel: cck_win_model;      //窗口模型
     private _args: any[];                  //参数
@@ -70,7 +70,7 @@ export class WindowBase<T extends Component> extends Mediator implements IWindow
     public getViewType(): number { return this._viewType; }
 
     /**
-     * 是否增加背景遮罩层, 一般会自动设置遮罩层，不需要调用从此方法, 特殊页面根据实际情况, 不需要背景遮罩层时, 调用此方法设置
+     * 是否增加背景遮罩层, 一般会自动设置遮罩层，不需要调用此方法, 特殊页面根据实际情况, 不需要背景遮罩层时, 调用此方法设置
      * @param hasMask 
      */
      public isAddMask(hasMask: boolean) {
@@ -99,13 +99,13 @@ export class WindowBase<T extends Component> extends Mediator implements IWindow
      * @param onProgress 进度回调
      */
     public load(accessId: string, isOpen: boolean, onProgress: (progress: number) => void, onComplete: () => void) {
-        if (app.game.canOpenWinForm(accessId)) {
+        if (app.game.canOpenWindow(accessId)) {
             this.loadView(isOpen, onProgress, onComplete, false);
         }
     }
 
     public open(onComplete: Function, ...args: any[]) {
-        if (app.game.canOpenWinForm(this.accessId)) {
+        if (app.game.canOpenWindow(this.accessId)) {
             this._openComplete = onComplete;
             this.showView(...args);
         }
@@ -162,7 +162,7 @@ export class WindowBase<T extends Component> extends Mediator implements IWindow
         this._viewType = this.onCreate(this._register);
         const message = "缺少UI界面的类型，请重写onCreate函数，设置UI界面类型。";
         if (Assert.handle(Assert.Type.InitViewTypeException, this._viewType, message)) {
-            this._winModel = Type[this._viewType] as cck_win_model;
+            this._winModel = UIType[this._viewType] as cck_win_model;
         }
     }
 
@@ -295,19 +295,19 @@ export class WindowBase<T extends Component> extends Mediator implements IWindow
      * 视图类实例化后调用，界面被创建对象后调用，有且只会调用一次，必需要return一个界面类型，用于确定界面的类型 
      * @param register 注册器，调用注册器的reg函数，注册消息通知
      * @example
-     *  onCreate(register: IRegister) {
+     *  protected onCreate(register: IRegister) {
      *      register.reg("testNotification", (body: any, type: string) => {
      *          console.log("消息通知传过来的数据", body);
      *      }, this);
      *      register.addCommand("你的命令");
-     *      return ui.Type.ROOT;
+     *      return ui.Type.ROOT_LAYER;
      * }
      */
-    onCreate(register: IRegister): number { return Type.NONE; }
+    protected onCreate(register: IRegister): number { return UIType.NONE; }
     /**
      * 视图加载完调用，只有加载后会调用，如果界面后续没有被销毁，再次打开时，不会再调用此函数，反之则会调用
      */
-    onLoad(): void { }
+    protected onLoad(): void { }
     /**
      * 视图显示后调用，每次打开界面显示后都会调用
      * @example
@@ -316,11 +316,11 @@ export class WindowBase<T extends Component> extends Mediator implements IWindow
      *      Debug.log("打开页面时传入的数据", data);
      *  }
      */
-    onStart(...args: any[]): void { }
+    protected onStart(...args: any[]): void { }
     /**视图关闭后调用，界面关闭后调用，此函数无论在界面关闭时是否被销毁，都会被调用，而且调用时机是后于onDestroy调用 */
-    onClose(): void { }
+    protected onClose(): void { }
     /**视图销毁后调用，界面销毁后调用，调用时机先于onClose调用 */
-    onDestroy(): void { }
+    protected onDestroy(): void { }
 
     /**
      * 列出资源的url，把需要引用到的资源的url注册增加到assetRegister，则会自动加载这些资源
@@ -336,9 +336,9 @@ export class WindowBase<T extends Component> extends Mediator implements IWindow
     /***********************************************/
     
      /**显示加载等待页面, 这是多态方法, 加载页面时会自动调用, 可以自行重写覆盖 */
-     protected showWait() {}
+    protected showWait() {}
      /**关闭加载等待页面, 这是多态方法, 页面加载完会自动调用, 可以自行重写覆盖 */
-     protected closeWait() {}
+    protected closeWait() {}
     /**具体ui窗体子类不要重写此函数 */
     protected _loadView() {}
     /**具体ui窗体子类不要重写此函数 */
@@ -350,7 +350,7 @@ export class WindowBase<T extends Component> extends Mediator implements IWindow
      * 此方法会适配页面的根节点大小, 如果页面根节点增加了AdapterWidget适配组件, 会打断适配过程
      */
      protected initPageSize() {
-        if (!this.node.getComponent(AdapterWidget) && this._viewType !== Type.TOAST) {
+        if (!this.node.getComponent(AdapterWidget) && this._viewType !== UIType.TOAST_LAYER) {
             app.adapterManager.adapterWidth(this.node);
             app.adapterManager.adapterHeight(this.node);
         }
@@ -389,7 +389,7 @@ export class WindowBase<T extends Component> extends Mediator implements IWindow
      * @param progress 具体进度，最大为1
      */
     private loadProgress(progress: number) {
-        if (this._viewType !== Type.ROOT) {
+        if (this._viewType !== UIType.ROOT_LAYER) {
             const onViewProgress = app.game.onViewProgress;
             if (onViewProgress.active) {
                 onViewProgress.dispatch(progress);

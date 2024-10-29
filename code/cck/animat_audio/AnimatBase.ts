@@ -14,6 +14,7 @@ export  abstract class AnimatBase<T> {
     protected _nextCallback: Function;
     protected _animatLoad: AnimatLoad;
     protected _playEnd: Function; //动画列表播放完成，即所有动画都播放完了
+    protected _rejected: Function;
 
     constructor(callback: (...args: any[]) => void) {
         this._status = "pending";
@@ -63,5 +64,11 @@ export  abstract class AnimatBase<T> {
                 reject({rejected: "rejected"});
             }
         });
+    }
+
+    protected callRejected() {
+        if (this._status === "rejected") {
+            SAFE_CALLBACK(this._rejected, this._err);
+        }
     }
 }

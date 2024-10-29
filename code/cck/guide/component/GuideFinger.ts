@@ -1,16 +1,16 @@
 import { createSprite, createText, restoreParent } from "../guide_utils";
-import { GuideNormalEvent } from "../GuideEnum";
+import { EventType, GuideNormalEvent } from "../GuideEnum";
 import { utils } from "../../utils";
 import { EventSystem } from "../../event";
 import { GuideTarget } from "./GuideTarget";
 import { Animation, Button, Component, Label, Node, Tween, tween, UITransform, v3, Vec3, _decorator } from "cc";
-import { IGuideConfig } from "../../lib.cck";
 import { EDITOR } from "cc/env";
 import { animat } from "../../animat_audio";
-import { ui } from "../../ui";
 import { app } from "../../app";
 import { GuideManager } from "../GuideManager";
 import { getPriority, setPriority } from "../../util";
+import { GuideAction } from "../GuideAction";
+import { Debug } from "../../Debugger";
 
 
 const {
@@ -51,7 +51,7 @@ export  class GuideFinger extends Component {
     private _timeout: number = 0;      
     private _interval: number = 4;            //自动引导时间间隔
     private _guideTargets: GuideTarget[]; //引导目标暂存
-    private _guideInfo: IGuideConfig;      //引导数据信息暂存
+    private _guideInfo: GuideAction;      //引导数据信息暂存
     private _lightTargets: Node[];         //引导高亮节点暂存
     private _targetZIndex: number[] = [];     //目标节点的zIndex
     private _lightParents: Node[] = [];    //高亮父节点
@@ -59,7 +59,7 @@ export  class GuideFinger extends Component {
     onLoad () {
         this.createNode();
         if (!EDITOR) {
-            GuideManager.instance.setGuideEnd(() => this.node.active = false, this);
+            GuideManager.instance.on(EventType.GUIDE_OVER, this.onGuideOver, this);
             EventSystem.event.on(GuideNormalEvent.FINGER_EVENT, this, this.nextGuide);
         }
     }
@@ -68,9 +68,18 @@ export  class GuideFinger extends Component {
         
     }
 
+    protected onDestroy(): void {
+        GuideManager.instance.off(EventType.GUIDE_OVER, this.onGuideOver, this);
+    }
+
+    private onGuideOver() {
+        this.node.active = false
+    }
+
     createNode() {
         if (!this.finger) {
             this.finger = new Node('finger');
+            this.finger.addComponent(UITransform);
             this.node.addChild(this.finger);
         }
         if (!this._effect) {
@@ -81,6 +90,7 @@ export  class GuideFinger extends Component {
         if (!this.text) {
             this.text = createText('text');
             this._textParent = new Node('textNode');
+            this._textParent.addComponent(UITransform);
             this._textParent.addChild(this.text);
             this.node.addChild(this._textParent);
         }
@@ -88,19 +98,19 @@ export  class GuideFinger extends Component {
     }
 
     /**执行引导 */
-    public executeGuide() {
+    public execGuide() {
+        this.log(this.execGuide, "开始执行手指引导！");
         this.node.active = true;
         this._clicked = false;
         this.storageGuideData();
         this.fingerTurn();
         this.fingerMove();
         if (this._guideTargets.length === 0) {
-            GuideManager.instance.setAgainExecute(true);
             return;
         }
                
-        this.text.getComponent(Label).string = GuideManager.instance.guideInfo.descript;
-        let is: boolean = utils.isNull(GuideManager.instance.guideInfo.descript) || utils.isUndefined(GuideManager.instance.guideInfo.descript) || GuideManager.instance.guideInfo.descript === 'null';
+        this.text.getComponent(Label).string = GuideManager.instance.guideAction.descript;
+        let is: boolean = utils.isNull(GuideManager.instance.guideAction.descript) || utils.isUndefined(GuideManager.instance.guideAction.descript) || GuideManager.instance.guideAction.descript === 'null';
         is && (this.text.getComponent(Label).string = '');
         this._textParent.active = !is;
         const textUI = this.text.getComponent(UITransform);
@@ -115,12 +125,11 @@ export  class GuideFinger extends Component {
             GuideManager.instance.addChildToGuideLayer(e);
         }
         
-        if (ui.isButton(this._guideInfo.targetId[0])) {
-            let target: Node = this._guideTargets[0].target;
+        const target: Node = this._guideTargets[0].target;
+        if (target.getComponent(Button)) {
             if (!target['guideTouchRegist']) {
                 target['guideTouchRegist'] = true;
                 EventSystem.addClickEventHandler(target, this, 'nextGuide');
-
             }
         }
         else {
@@ -174,7 +183,9 @@ export  class GuideFinger extends Component {
 
     playAnimat(play: boolean) {
         if (play) {
-            animat(this._effect).defaultClip().play();
+            animat(this._effect).defaultClip().play().catch(err => {
+                this.error(this.playAnimat, "手指引导动画执行错误：", err);
+            });
         }
         else {
             animat(this._effect).defaultClip().onStop(() => {
@@ -184,13 +195,15 @@ export  class GuideFinger extends Component {
                         animat(this._effect.children[i]).defaultClip().stop();
                     }
                 }
-            }).stop();
+            }).stop().catch(err => {
+                this.error(this.playAnimat, "手指引导动画执行错误：", err);
+            });
         }
     }
 
     //暂存引导相关数据
     private storageGuideData() {
-        this._guideInfo = GuideManager.instance.guideInfo;
+        this._guideInfo = GuideManager.instance.guideAction;
         this._guideTargets = GuideManager.instance.guideTargets;
         this._lightTargets = GuideManager.instance.lightTargets;
     }
@@ -204,7 +217,7 @@ export  class GuideFinger extends Component {
         this._clicked = true;
         for (let guideTarget of this._guideTargets) {
             for (let i: number = 0; i < guideTarget.guideIds.length; ++i) {
-                if (this._guideInfo.key === guideTarget.guideIds[i]) {
+                if (this._guideInfo.guideId === guideTarget.guideIds[i]) {
                     guideTarget.guideIds.splice(i, 1);
                     let index: number = 0;
                     for (let ele of this._lightTargets) {
@@ -227,6 +240,14 @@ export  class GuideFinger extends Component {
                 button.interactable = enable;
             }
         }
+    }
+
+    private log(fn: Function, ...subst: any[]) {
+        Debug.log(utils.StringUtil.format("[GuideFinger:%s]", fn.name), ...subst);
+    }
+
+    private error(fn: Function, ...subst: any[]) {
+        Debug.error(utils.StringUtil.format("[GuideFinger:%s]", fn.name), ...subst);
     }
 
     update (dt: number) {

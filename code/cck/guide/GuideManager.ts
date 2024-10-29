@@ -1,13 +1,19 @@
 import { Debug } from "../Debugger";
-import { UIManager } from "../ui/UIManager";
 import { utils } from "../utils";
 import { GuideTarget } from "./component/GuideTarget";
-import { EventType, GuideNormalEvent, Scope } from "./GuideEnum";
+import { GuideNormalEvent, Scope } from "./GuideEnum";
 import { GuideSearch } from "./GuideSearch";
-import { Component, director, Node, sys, UITransform, Vec3 } from "cc";
-import { IContainer, IGuideConfig, IGuideView } from "../lib.cck";
+import { Component, director, Node, UITransform, Vec3 } from "cc";
+import { IGuideManager, IGuideWindow } from "../lib.cck";
 import { EventSystem } from "../event";
+import { GuideGroup } from "./GuideGroup";
+import { GuideAction } from "./GuideAction";
+import { Res } from "../res/Res";
+import { JsonAsset } from "cc";
+import { SAFE_CALLBACK } from "../Define";
+import { ui } from "../ui";
 
+const _vec3Temp = new Vec3();
 
 
 /**
@@ -16,26 +22,25 @@ import { EventSystem } from "../event";
  * author: 何沛东
  * description: 控制和管理游戏中的引导
  */
-export class GuideManager {
-    private _isGuideLaunched: boolean;                         //引导已经启动
-    private _isGuiding: boolean;                               //正在引导
-    private _close: boolean;                                   //关闭引导功能
-    private _lastUiId: string;                                 //上一个uiId
+export class GuideManager implements IGuideManager {
     private _fingerSpeed: number;                              //手指移动速度
-    private _guideInfo: IGuideConfig;                          //当前的引导配置信息
-    private _storage_key: string;                              //引导数据缓存键
+    private _syncGuideId: string;                              //同步引导id
     private _guideSearch: GuideSearch;                         //引导检索
-    private _guideMask: Node;                               //引导遮罩
-    private _guideLayer: Node;                              //引导层节点
-    private _guideView: IGuideView;                            //引导视图
+    private _guideMask: Node;                                  //引导遮罩
+    private _guideLayer: Node;                                 //引导层节点
+    private _guideWindow: string;                              //引导视图的访问ID
+    private _group: GuideGroup;                                //引导组
+    private _fileData: {};                                     //引导数据文件的数据
 
     private constructor() {
-        this._storage_key = 'guide_complete';
-        this._isGuideLaunched = false;
-        this._isGuiding = false;
-        this._close = false;
-        this._lastUiId = '';
+        this._syncGuideId = "";
         this._guideSearch = new GuideSearch();
+        this._group = new GuideGroup(this._guideSearch);
+
+        EventSystem.event.on(GuideGroup.Event.SHOW_GUIDE_VIEW, this, this.onShowGuideView);
+        EventSystem.event.on(GuideGroup.Event.SHOW_GUIDE_MASK, this, this.onShowGuideMask);
+        EventSystem.event.on(GuideGroup.Event.SYNC_TO_STORAGE, this, this.syncToStorage);
+        EventSystem.event.on(GuideGroup.Event.HIDE_GUIDE_MASK, this, this.onHideGuideMask);
     }
 
     private static _ins: GuideManager = null;
@@ -44,47 +49,86 @@ export class GuideManager {
     }
 
 
-    public get isGuideClose(): boolean { return this._close; }
-    public get isGuideLaunched(): boolean { return this._isGuideLaunched; }
-    public get isGuiding(): boolean { return this._isGuiding; }
-    public get guideInfo(): IGuideConfig { return this._guideInfo; }
-    public get guideTargets(): GuideTarget[] {
-        let targets: GuideTarget[] = [];
-        for (let e of this._guideInfo.targetId) {
-            if (this._guideSearch.getGuideTargets().has(e)) {
-                targets.push(this._guideSearch.getGuideTargets().get(e));
-            }
-        }
-        return targets;
-    }
-    public get guideId() { return parseInt(this.syncFromStorage()); }
+    public get isGuideClose(): boolean { return this._group.isClose; }
+    public get isGuideLaunched(): boolean { return this._group.isGuideLaunched; }
+    public get isGuiding(): boolean { return this._group.isGuiding; }
+    public get isAgainExecute(): boolean { return this._group.isAgainExecute; }
+    public get guideData(): {} { return this._fileData; }
+    public get guideAction(): GuideAction { return this._group.currentGuide; }
+    public get guideTargets(): GuideTarget[] { return this._group.guideTargets; }
+    /**已经执行完的最后的一个引导id，存储的是距离还未执行的引导id最近的一个已执行完的引导id */
+    public get guideId() { return this._syncGuideId; }
     public get fingerSpeed(): number { return this._fingerSpeed; }
-    public get guideFile(): IContainer<IGuideConfig> { return this._guideSearch.getGuideFile(); }
-    public get guideType(): number {
-        return this.guideInfo.guideType;
-    }
-    public get lightTargets(): Node[] { return this._guideSearch.getLightTargets().get(this._guideInfo.key); }
+    public get guideGroup() { return this._group.guideGroup; }
+    public get guideType(): number { return this.guideAction.guideType; }
+    public get lightTargets(): Node[] { return this._group.lightTargets; }
 
-    public setAgainExecute(againExecute: boolean) {
-        this._guideSearch.setAgainExecute(againExecute);
+    private onShowGuideView() {
+        ui.open(this._guideWindow);
+    }
+
+    private onShowGuideMask(uiId: string) {
+        if (this._guideMask) {
+            this._guideMask.active = !this._guideSearch.isParentPanel(uiId);
+        }
+    }
+
+    private onHideGuideMask() {
+        const guideView = ui.getView(this._guideWindow) as IGuideWindow;
+        guideView.closeGuideWindow();
     }
 
     /**将引导存储到缓存中 */
-    public syncToStorage() {
-       sys.localStorage.setItem(this._storage_key, this._guideInfo.key.toString());
+    private syncToStorage(guideId: string) {
+        this._syncGuideId = guideId;
     }
 
-    /**从缓存中获取同步引导 */
-    public syncFromStorage() {
-        return sys.localStorage.getItem(this._storage_key);
+    /**
+     * 加载引导数据
+     * @param path 引导数据本地目录的路径
+     * @param nameOrUrl 资源包名或者路径
+     * @param onComplete 加载成功回调
+     */
+    public loadGuideData(path: string, nameOrUrl: string, onComplete?: Function): void;
+    public loadGuideData(path: string, onComplete?: Function): void;
+    public loadGuideData() {
+        if (typeof arguments[1] === 'string') {
+            const path = arguments[0];
+            const nameOrUrl = arguments[1];
+            const onComplete = arguments[2];
+            Res.createLoader(nameOrUrl).then(loader => {
+                loader.load(path, JsonAsset, (err, assets: JsonAsset) => {
+                    if (err) {
+                        this.error(this.loadGuideData, "加载引导数据失败", err);
+                        return;
+                    }
+                    this.setGuideFile(assets.json);
+                    SAFE_CALLBACK(onComplete);
+                });
+            }).catch(e => {
+                this.error(this.loadGuideData, "加载引导数据失败", e);
+            });
+        }
+        else {
+            const path = arguments[0];
+            const onComplete = arguments[1];
+            Res.loader.load(path, JsonAsset, (err, assets: JsonAsset) => {
+                if (err) {
+                    this.error(this.loadGuideData, '加载引导数据失败', err);
+                    return;
+                }
+                this.setGuideFile(assets.json);
+                SAFE_CALLBACK(onComplete);
+            });
+        }
     }
 
     /**
      * 设置引导视图
-     * @param guideView 
+     * @param accessId 
      */
-    public setGuideView(guideView: IGuideView): void {
-        this._guideView = guideView;
+    public setGuideView(accessId: string): void {
+        this._guideWindow = accessId;
     }
 
     /**
@@ -149,19 +193,14 @@ export class GuideManager {
      * 检索所有高亮节点
      * @param guideId 
      */
-    public searchLightTarget(guideId: number): boolean {
+    public searchLightTarget(guideId: string): boolean {
         this._guideSearch.searchLightTarget(guideId);
         return this.lightTargets && this.lightTargets.length > 0;
     }
 
     /**引导回退 */
     public guideRollBack() {
-        if (!this.guideInfo) return;
-        let guideId: number = this._guideInfo.key - 1;
-        let info: IGuideConfig = this.guideFile.get(guideId);
-        if (info) {
-            this._guideInfo = info;
-        }
+        this._group.guideRollBack(this._syncGuideId);
     }
 
     /**
@@ -176,199 +215,92 @@ export class GuideManager {
      * 设置引导数据文件
      * @param file 
      */
-    public setGuideFile(file: IContainer<IGuideConfig>): void {
-        this._guideSearch.setGuideFile(file);
+    private setGuideFile(file: {}): void {
+        this._fileData = file;
     }
 
     /**
-     * 设置每一步引导完成监听
+     * 注册引导执行回调
+     * @param type 事件类型
      * @param listeners 监听回调
-     * @param caller 执行者
+     * @param caller 事件注册者
      */
-    public setGuideComplete(listeners: Function, caller: any) {
-        EventSystem.event.on(EventType.GUIDE_COMPLETE, caller, listeners);
+    public on(type: string, listeners: Function, caller: any) {
+        EventSystem.event.on(type, caller, listeners);
     }
 
     /**
-     * 设置引导结束监听
+     * 注销引导执行回调
+     * @param type 事件类型
      * @param listeners 监听回调
-     * @param caller 执行者
+     * @param caller 事件注册者
      */
-    public setGuideOver(listeners: Function, caller: any) {
-        EventSystem.event.on(EventType.GUIDE_OVER, caller, listeners);
+    public off(type: string, listeners: Function, caller: any) {
+        EventSystem.event.off(type, caller, listeners);
     }
 
-    /**
-     * 设置开始引导监听
-     * @param listeners 监听回调
-     * @param caller 执行者
-     */
-    public setGuideStart(listeners: Function, caller: any) {
-        EventSystem.event.on(EventType.GUIDE_START, caller, listeners);
-    }
-    /**
-     * 设置引导完结监听，此监听为完成所有引导时，即引导完成执行完时执行此回调
-     * @param listeners 监听回调
-     * @param caller 执行者
-     */
-    public setGuideEnd(listeners: Function, caller: any): void {
-        EventSystem.event.on(EventType.GUIDE_NONE, caller, listeners);
-    }
-
-    /**
-     * 引导数据同步
-     * @param guideId 
-     */
-    public guideSync(guideId: number) {
-        sys.localStorage.setItem(this._storage_key, guideId.toString());
-    }
-
-    /**还有引导 */
+    /**在当前这一组引导组内，是否还有引导未执行完 */
     public hasGuideAction(): boolean {
-        if (!this.syncFromStorage()) {
-            return true;
-        }
-        const guideInfo = this.guideFile.get(this.syncFromStorage());
-        if (guideInfo) {
-            return guideInfo.syncId !== -1;
-        }
-        else {
-            return false;
-        }
+        return this._group.hasGuideAction(this._syncGuideId);
     }
 
     public getGuideTargets() {
         return this._guideSearch.getGuideTargets();
     }
 
-    /**强制关闭引导 */
-    public guideClose() {
-        this._close = true;
-        this._isGuideLaunched = false;
-        this._isGuiding = false;
+    /**暂停引导 */
+    public guidePause() {
+        this._group.guidePause();
     }
 
-    /**强制打开引导 */
+     /**引导恢复, 恢复后的引导,将执行下一步引导 */
+     public guideResume() {
+        this._group.guideResume();
+    }
+
+    /**
+     * 同步引导组，在开始引导之前，必须要先同步引导组
+     * @param groupId 引导组id
+     * @param guideId 引导id，一般为存储的上一次已经执行完的id，如果没有，则可以不传
+     */
+    public syncGuideGroup(groupId: string, guideId: string = "") {
+        if (this._fileData) {
+            if (groupId in this._fileData) {
+                this._group.initGuideGroup(this._fileData[groupId]);
+                if (typeof guideId === "string") {
+                    this._syncGuideId = guideId;
+                }
+            }
+        }
+        else {
+            this.error(this.syncGuideGroup, "没有设置引导数据，请先设置引导数据！调用 ‘setGuideFile’ 函数可以设置引导数据。");
+        }
+    }
+
+    /**
+     * 打开引导，让引导开始执行
+     */
     public guideOpen() {
-        this._close = false;
-        this.nextGuideInSwitchUI();
+        this._group.guideOpen(this._syncGuideId);
     }
 
     /**在手指引导之后执行下一步, 在某些情况下可能会需要调用, 通常调用此接口的可能性不大 */
-    public nextStepFingerGuide() {
+    public execNextStepAfterFingerGuide() {
         EventSystem.event.emit(GuideNormalEvent.FINGER_EVENT);
     }
 
-    public againExecute(scope: Scope) {
-        this._guideSearch.againExecute(scope);
+    public againExecute() {
+        this._group.guideStart();
     }
 
     /**当前引导启动 */
     public guideLaunch() {
-        Debug.log('[GuideManager] guideLaunch 引导启动', this._guideInfo, this._close);
-        if (!this.guideFile || this._close) return;
-
-        let guideId: number = parseInt(this.syncFromStorage());
-        Debug.log('[GuideManager] guideLaunch 引导ID', guideId);
-        let guideInfo: IGuideConfig = this.guideFile.get(guideId);
-
-        //开始执行引导，这里是接着之前的引导，可能需要打开相应的界面
-        if (guideInfo) {
-            if (guideInfo.againId > -1) {
-                //暂存上一步引导的uiId
-                this._isGuideLaunched = true;
-                this._lastUiId = guideInfo.uiId;
-                if (guideInfo.againId !== 0) {
-                    this._guideInfo = this.guideFile.get(guideInfo.againId);
-                    if (this._guideSearch.isViewOpen(this._guideInfo.uiId)) {
-                        this.guideStart();
-                    }
-                }
-                else {
-                    //重新回到游戏后, 下一步引导如果为0, 即暂时没有下一步, 需要条件触发下一步引导, 把储存的引导步骤作为当前已完成的引导
-                    this._guideInfo = guideInfo;
-                    this.guideComplete();
-                }
-            }
-            else {
-                this.guideEnd();
-            }
-        }
-        else {
-            //如果没有缓存的引导数据，就从第一个引导数据开始引导
-            this._isGuideLaunched = true;
-            this._guideInfo = this.guideFile.get(this.guideFile.keys[0]);
-            this.guideStart();
-        }
-    }
-
-    /**引导恢复, 恢复后的引导,将执行下一步引导 */
-    public guideResume() {
-        if (this._close) {
-            return;
-        }
-        this.syncGuideInfo();
-        Debug.log('[GuideManager] guideResume 引导恢复', this._guideInfo);
-        if (this._guideInfo.syncId === 0) {
-            this._guideInfo = this.guideFile.get(this._guideInfo.key + 1);
-            if (this._guideInfo) {
-                this.guideStart();
-            }
-            else {
-                Debug.error('引导配置表数据异常，对应的引导ID为：', this._guideInfo.key);
-            }
-        }
-        else if (this._guideInfo.syncId === -1) {
-            this.guideEnd();
-        }
+        this._group.guideLaunch(this._syncGuideId);
     }
 
     /**当前引导完成，继续下一步引导 */
     public guideContinue() {
-        if (!this.isGuiding || this._close) return;
-
-        Debug.log('[GuideManager] guideContinue 当前引导完成，继续下一步引导');
-        this.guideComplete();
-        if (this._guideInfo.syncId > 0) {
-            //暂存上一步引导的uiId
-            this._lastUiId = this._guideInfo.uiId;
-            this._guideInfo = this.guideFile.get(this._guideInfo.syncId);
-            this.nextGuideInCurrUI();
-        }
-        else if (this._guideInfo.syncId === 0) {
-            this.guideOver();
-        }
-        else if (this._guideInfo.syncId === -1) {
-            this.guideEnd();
-        }
-    }
-
-    /**在切换UI时执行下一步引导 */
-    public nextGuideInSwitchUI() {
-        if (!this.guideInfo || this._close) {
-            if (this.hasGuideAction()) {
-                Debug.log('加载引导层视图');
-                !this._close && this._guideView.show();
-            }
-            return;
-        }
-        //在其他界面引导, 需要判断当前是否还处在引导状态
-        if (this.switchUI() && this.isGuiding) {
-            this.guideStart();
-        }
-    }
-
-    /**在当前UI上执行下一步引导 */
-    public nextGuideInCurrUI() {
-        if (!this.guideInfo || this._close) {
-            return;
-        }
-        if (!this.switchUI()) {
-            this.guideStart();
-        }
-        else if (this._guideSearch.isViewOpen(this.guideInfo.uiId)) {
-            this.nextGuideInSwitchUI();
-        }
+        this._group.guideContinue();
     }
 
     /**删除引导目标 */
@@ -398,79 +330,34 @@ export class GuideManager {
         //转换到Canvas节点坐标系下, 用于计算锚点
         const canvas = director.getScene().getChildByName("Canvas");
         let pos: Vec3 = utils.EngineUtil.convertPosition(text, canvas);
-        const ui = text.getComponent(UITransform);
+        const uiTransform = text.getComponent(UITransform);
         const targetUI = this.guideTargets[0].target.getComponent(UITransform);
-        let width: number = ui.width / 2;
+        let width: number = uiTransform.width / 2;
         //计算是否需要显示在引导目标上方, 若目标下方还有足够空间, 显示在下方
-        let anchorY: number = (text.position.y + ui.height - targetUI.height / 2) > 10 ? 1 : 0;
-        ui.anchorY = anchorY;
+        let anchorY: number = (text.position.y + uiTransform.height - targetUI.height / 2) > 10 ? 1 : 0;
+        uiTransform.anchorY = anchorY;
         //计算文本是否超出屏幕外, 或者距离屏幕边界太近, 是, 则修正位置
         const canvasUI = canvas.getComponent(UITransform);
         let offset = canvasUI.width / 2 - Math.abs(pos.x);
+        _vec3Temp.x = text.position.x;
+        _vec3Temp.y = text.position.y;
         if (offset < width) {
-            const x = text.position.x > 0 ? text.position.x - Math.abs(width - offset) - 30 : text.position.x + Math.abs(width - offset) + 30;
-            text.position.set(x, text.position.y);
+            _vec3Temp.x = text.position.x > 0 ? text.position.x - Math.abs(width - offset) - 30 : text.position.x + Math.abs(width - offset) + 30;
         }
         else if (offset - width < 20) {
-            const x = text.position.x > 0 ? text.position.x - 30 : text.position.x + 30;
-            text.position.set(x, text.position.y);
+            _vec3Temp.x = text.position.x > 0 ? text.position.x - 30 : text.position.x + 30;
         }
 
         if (anchorY === 0) {
-            const y = text.position.y + targetUI.height / 2 + 10 + ui.height / 2;
-            text.position.set(text.position.x, y);
+            _vec3Temp.y = text.position.y + targetUI.height / 2 + 10 + uiTransform.height / 2;
         }
         else if (anchorY === 1) {
-            const y = text.position.y - targetUI.height / 2 - 10 - ui.height / 2;
-            text.position.set(text.position.x, y);
+            _vec3Temp.y = text.position.y - targetUI.height / 2 - 10 - uiTransform.height / 2;
         }
+        text.position = _vec3Temp;
     }
 
-    /**当前这一步引导开始执行 */
-    private guideStart() {
-        if (this._guideSearch.isViewOpen(this.guideInfo.uiId)) {
-            Debug.log('[GuideManager] 新的引导开始执行', this._guideInfo.key, this._guideInfo.light);
-            this._isGuiding = true;
-            this._guideMask && (this._guideMask.active = !UIManager.instance.isView(this._guideInfo.light[0]));
-            EventSystem.event.emit(EventType.GUIDE_START, this.guideInfo.key);
-        }
-    }
-
-    /**当前这一步引导完成 */
-    private guideComplete() {
-        this.syncToStorage();
-        EventSystem.event.emit(EventType.GUIDE_COMPLETE, this.guideInfo.key);
-    }
-
-    /**本轮引导结束 */
-    private guideOver() {
-        Debug.log('[GuideManager] 本轮引导结束');
-        this._isGuiding = false;
-        this._guideMask && (this._guideMask.active = false);
-        EventSystem.event.emit(EventType.GUIDE_OVER, this.guideInfo.key);
-    }
-
-    /**所有引导已经完结 */
-    private guideEnd() {
-        Debug.log('[GuideManager] 所有引导已经完结');
-        this.guideClose();
-        this._guideMask && (this._guideMask.active = false);
-        EventSystem.event.emit(EventType.GUIDE_NONE);
-    }
-
-    /**是否切换了UI */
-    private switchUI() {
-        Debug.log('lastUiId', this._lastUiId, this.guideInfo.uiId);
-        if (this._lastUiId.length === 0) {
-            return false;
-        }
-
-        else return this._lastUiId !== this.guideInfo.uiId;
-    }
-
-    /**同步引导信息 */
-    private syncGuideInfo() {
-        let guideId: number = parseInt(this.syncFromStorage());
-        this._guideInfo = this.guideFile.get(guideId);
+    private error(fn: Function, ...subst: any[]) {
+        Debug.error(utils.StringUtil.format("[GuideManager:%s]", fn.name), ...subst);
     }
 }

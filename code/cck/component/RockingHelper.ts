@@ -12,7 +12,7 @@ const _vec3WPosTemp = new Vec3();
 @ccclass('RockingHelper')
 @executeInEditMode
 @menu("游戏通用组件/虚拟摇杆/RockingHelper(摇杆助手)")
-export class RockingHelper extends app.BaseView {
+export class RockingHelper extends app.BaseLayout {
 
     @property(RockingBar)
     private rockingBar: RockingBar = null;
