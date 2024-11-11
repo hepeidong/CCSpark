@@ -6,37 +6,30 @@ declare class tt {}
  declare namespace tt {
     export const scope: Scope;
     export const authSetting: AuthSetting;
-    export function loadSubpackage(obj: {name: string; success: Function; fail: Function; complete: Function;}): LoadSubpackageTask;
+    export function loadSubpackage(obj: ITTSubpackage): LoadSubpackageTask;
     export function connectSocket(obj: any): any;
     export function request(obj: any): any;
-    export function exitMiniProgram(obj: { success?: Function; fail?: Function; complete?: Function });
+    export function exitMiniProgram(obj: IMiniObject);
     export function request(obj: any): RequestTask;
-    export function navigateToMiniProgram(obj: { appId: string; path?: string; extraData?: any; envVersion?: 'develop' | 'trial' | 'release'; success?: (res: any) => void; fail?: Function; complete?: Function }): void;
-    export function joinVoIPChat(obj: {
-        roomType?: 'voice' | 'video';
-        nonceStr: string;
-        signature: string;
-        timeStamp: number;
-        groupId: string;
-        muteConfig?: { muteMicrophone?: boolean; muteEarphone?: boolean };
-        success?: (res: any) => void; fail?: Function; complete?: Function
-    }): void;
-    export function exitVoIPChat(obj: { success?: Function; fail?: Function; complete?: Function }): void;
-    export function getSetting(obj: { success?: (res: any) => void; fail?: Function; complete?: Function }): void;
-    export function openSetting(obj: { success?: (res: any) => void; fail?: Function; complete?: Function }): void;
+    export function navigateToMiniProgram(obj: ITTNavigateToMiniProgram): void;
+    export function joinVoIPChat(obj: ITTJoinVoIPChat): void;
+    export function exitVoIPChat(obj: IMiniObject): void;
+    export function getSetting(obj: IMiniObject): void;
+    export function openSetting(obj: IMiniObject): void;
 
+    
     /**
      * 微信权限设置，建议使用封装好的 setAuthorize 方法，权限类型调用wx.scope
      * @param obj 
      */
-    export function authorize(obj: { scope: string, success?: () => void; fail?: Function; complete?: Function }): void;
+    export function authorize(obj: ITTAuthorize): void;
     export function createRewardedVideoAd(obj: { adUnitId: string }): VideoAdInterface;
-    export function showToast(obj: { title: string, image?: string, duration?: number, icon?: 'success' | 'error' | 'loading' | 'none', mask?: boolean, success?: Function, fail?: Function, complete?: Function }): void;
+    export function showToast(obj: ITTShowToast): void;
     export function hideToast(): void;
-    export function showLoading(obj: { title: string; mask?: boolean; success?: Function; fail?: Function; complete?: Function }): void;
+    export function showLoading(obj: ITTShowLoading): void;
     export function hideLoading(): void;
     export function createInterstitialAd(obj: { adUnitId: string }): InterstitialAdInterface;
-    export function shareAppMessage(obj: { title: string, query?: string, imageUrlId?: string, imageUrl?: string, success?: (ret: any) => void | null, fail?: () => void | null }): void;
+    export function shareAppMessage(obj: ITTShareAppMessage): void;
     export function onShow(callback: (ret: any) => void): void;
     export function openCustomerServiceConversation(): void;
     export function getSystemInfoSync(): any;
@@ -115,5 +108,14 @@ declare class tt {}
     export function requestSubscribeMessage(obj: { tmplIds: any; success?: Function; fail?: Function; complete?: Function }): void;
     export function reportUserBehaviorBranchAnalytics(obj: {branchId: string; branchDim?: string; eventType: number }):void;
     export function aldSendEvent(send_name: string, obj: { send_key?: string; send_value?: string }): void;
+
+    export class TTSocket {
+        send(obj: IMiniSocketSend): void;
+        close(obj: IMiniSocketClose): void;
+        onOpen(callback: (res: any) => void): void;
+        onClose(callback: (res: IMiniSocketClose&{errMsg: string}) => void): void;
+        onError(callback: (res: {errMsg: string}) => void): void;
+        onMessage(callback: (res: {data: any}) => void): void;
+    }
  }
  /*******************************************************************************************************/

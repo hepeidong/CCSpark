@@ -45,7 +45,7 @@ interface VideoAdInterface {
     destroy(): void;
     onError(callback: (res: { errMsg: string, errCode: number }) => void): void;
     onLoad(callback: Function): void;
-    onClose(callback: Function);
+    onClose(callback: Function): void;
     hide(): void;
     offLoad(callback: Function): void;
     offClose(callback: Function): void;
@@ -57,7 +57,7 @@ interface InterstitialAdInterface {
     destroy(): void;
     onError(callback: (res: { errMsg: string, errCode: number }) => void): void;
     onLoad(callback: Function): void;
-    onClose(callback: Function);
+    onClose(callback: Function): void;
     hide(): void;
     offLoad(callback: Function): void;
     offClose(callback: Function): void;
@@ -198,4 +198,54 @@ declare namespace canvas {
         fileType?: string;
         quality?: number;
     });
+}
+
+interface IMiniObject {
+    success? (res: any): void;
+    fail? (res: any): void;
+    complete? (res: any): void;
+}
+interface ITTSubpackage extends IMiniObject {
+    name: string;
+}
+interface ITTNavigateToMiniProgram extends IMiniObject {
+    appId: string; 
+    path?: string; 
+    extraData?: any; 
+    envVersion?: 'develop' | 'trial' | 'release';
+}
+interface ITTJoinVoIPChat extends IMiniObject {
+    roomType?: 'voice' | 'video';
+    nonceStr: string;
+    signature: string;
+    timeStamp: number;
+    groupId: string;
+    muteConfig?: { muteMicrophone?: boolean; muteEarphone?: boolean };
+}
+interface ITTAuthorize extends IMiniObject {
+    scope: string;
+}
+interface ITTShowToast extends IMiniObject {
+    title: string;
+    image?: string;
+    duration?: number; 
+    icon?: 'success' | 'error' | 'loading' | 'none'; 
+    mask?: boolean;
+}
+interface ITTShowLoading extends IMiniObject {
+    title: string; 
+    mask?: boolean;
+}
+interface ITTShareAppMessage extends IMiniObject {
+    title: string; 
+    query?: string; 
+    imageUrlId?: string; 
+    imageUrl?: string;
+}
+interface IMiniSocketSend extends IMiniObject {
+    data: string|ArrayBuffer;
+}
+interface IMiniSocketClose extends IMiniObject {
+    code: number;
+    reason: string;
 }

@@ -115,5 +115,14 @@ declare namespace wx {
     export function requestSubscribeMessage(obj: { tmplIds: any; success?: Function; fail?: Function; complete?: Function }): void;
     export function reportUserBehaviorBranchAnalytics(obj: {branchId: string; branchDim?: string; eventType: number }):void;
     export function aldSendEvent(send_name: string, obj: { send_key?: string; send_value?: string }): void;
+
+    export class WXSocket {
+        send(obj: IMiniSocketSend): void;
+        close(obj: IMiniSocketClose): void;
+        onOpen(callback: (res: any) => void): void;
+        onClose(callback: (res: IMiniSocketClose) => void): void;
+        onError(callback: (res: {errMsg: string}) => void): void;
+        onMessage(callback: (res: {data: any}) => void): void;
+    }
 }
 /*******************************************************************************************************/
