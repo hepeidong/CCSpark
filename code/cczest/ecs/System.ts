@@ -1,7 +1,7 @@
 import { SystemDoesNotHaveNameException } from "./exceptions/SystemDoesNotHaveNameException";
 import { utils } from "../utils";
 import { setParentType } from "../decorator/Decorator";
-import { IBaseEntity, IEndEntityCommandBufferSystem, IEntityManager, IMatcher, ISystem } from "../lib.ccspark";
+import { IBaseEntity, IEndEntityCommandBufferSystem, IEntityManager, IMatcher, ISystem } from "../lib.zest";
 import { Debug } from "../Debugger";
 
 /**

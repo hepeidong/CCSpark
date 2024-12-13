@@ -3,9 +3,9 @@ import { Debug } from "../Debugger";
 import { SAFE_CALLBACK } from "../Define";
 import { Assert } from "../exceptions/Assert";
 import { GameSocket } from "./GameSocket";
-import { cc_zest_socket_protocol } from "../lib.ccspark";
+import { cc_zest_socket_protocol } from "../lib.zest";
 
-const {ccsclass} = decorator;
+const {zestClass} = decorator;
 
 /**
  * author: 何沛东
@@ -13,7 +13,7 @@ const {ccsclass} = decorator;
  * name: 微信平台socket代理类
  * description: 负责游戏中的微信平台网络连接
  */
-@ccsclass("WXSocket")
+@zestClass("WXSocket")
 export class WXSocket extends GameSocket<wx.WXSocket> {
     private _contentType: string;
     constructor() {

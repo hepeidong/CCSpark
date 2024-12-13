@@ -1,6 +1,6 @@
 import { Asset } from "cc";
 import { SAFE_CALLBACK } from "../Define";
-import { IAssetRegister, ILoader } from "../lib.ccspark";
+import { IAssetRegister, ILoader } from "../lib.zest";
 
 export class AssetRegister implements IAssetRegister {
     private _haveVersion: boolean;

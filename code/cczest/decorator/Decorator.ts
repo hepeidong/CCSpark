@@ -1,6 +1,6 @@
 import { js } from "cc";
 import { EDITOR } from "cc/env";
-import { Constructor, IBaseEntity, IConvertToEntity, ISystem, ISystemGroup } from "../lib.ccspark";
+import { Constructor, IBaseEntity, IConvertToEntity, ISystem, ISystemGroup } from "../lib.zest";
 import { STARTUP } from "../Define";
 import { setBundle, setHttpMethod, setHttpUrl, setModel, setProp, setStartScene, setTemplate, setUpdateAfter, setUpdateBefore, setUpdateInGroup } from "./Decorator_setup";
 
@@ -54,20 +54,20 @@ function startScene(sceneName: string) {
 
 
 /**
- * 框架的类装饰器，用于声明GDCClass，当你需要通过js.getClassByName获取该类时，则可以使用此装饰器装饰你的类，
+ * 框架的类装饰器，用于声明类，当你需要通过js.getClassByName获取该类时，则可以使用此装饰器装饰你的类，
  * 要注意，框架中有些类是必须要使用此装饰器装饰的。
  * @param className 你的类名
  */
-function ccsclass(className: string): Function;
-function ccsclass<T>(constructor: {new (): T}): new () => T;
-function ccsclass() {
+function zestClass(className: string): Function;
+function zestClass<T>(constructor: {new (): T}): new () => T;
+function zestClass() {
     if (EDITOR) {
         return function () {}
     }
     if (typeof arguments[0] === "string") {
         const className = arguments[0];
         if (className.length === 0) {
-            throw new Error('装饰器无法获取到类名，请使用 ccsclass("该类的类名") 方式装饰你的类！');
+            throw new Error('装饰器无法获取到类名，请使用 zestClass("该类的类名") 方式装饰你的类！');
         }
         return function (constructor: Function) {
             if (js.isChildClassOf(constructor, parentMap.gameWorld)) {
@@ -88,7 +88,7 @@ function ccsclass() {
         let constructor = arguments[0];
         const className = js.getClassName(constructor);
         if (className.length === 0) {
-            throw new Error('装饰器无法获取到类名，请使用 ccsclass("该类的类名") 方式装饰你的类！');
+            throw new Error('装饰器无法获取到类名，请使用 zestClass("该类的类名") 方式装饰你的类！');
         }
         if (js.isChildClassOf(constructor, parentMap.gameWorld)) {
             STARTUP.name = className;
@@ -241,7 +241,7 @@ export const decorator = {
     prop,
     model,
     http,
-    ccsclass,
+    zestClass,
     template,
     bundle,
     updateInGroup,

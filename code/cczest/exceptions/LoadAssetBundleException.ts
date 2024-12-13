@@ -2,9 +2,9 @@ import { decorator } from "../decorator/Decorator";
 import { Debug } from "../Debugger";
 import { Exception } from "./Exception";
 
-const {ccsclass} = decorator;
+const {zestClass} = decorator;
 
-@ccsclass("LoadAssetBundleException")
+@zestClass("LoadAssetBundleException")
 export class LoadAssetBundleException extends Exception {
     private _err: string;
     constructor(message: string, err: any) {

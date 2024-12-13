@@ -10,6 +10,8 @@ import { ui } from "../../ui";
 import { GuideManager } from "../GuideManager";
 import { UITransform } from "cc";
 import { utils } from "../../utils";
+import { Layers } from "cc";
+import { GuideImage } from "./GuideImage";
 
 
 const {
@@ -45,7 +47,8 @@ export  class GuideHelper extends Component {
     private fingerSpeed: number = 5;
 
     @property({
-        tooltip: '选中该选项，增加手指引导'
+        tooltip: '选中该选项，增加手指引导',
+        displayName: "手指引导"
     })
     isFinger: boolean = false;
 
@@ -56,6 +59,7 @@ export  class GuideHelper extends Component {
                 let newNode: Node = new Node("guideFinger");
                 if (newNode) {
                     this.guideFinger = newNode;
+                    this.guideFinger.layer = Layers.Enum.UI_2D;
                     this.guideFinger.addComponent(UITransform);
                     this.guideFinger.addComponent("GuideFinger");
                     this.node.addChild(this.guideFinger);
@@ -71,7 +75,8 @@ export  class GuideHelper extends Component {
     guideFinger: Node = null;
 
     @property({
-        tooltip: '选中该选项，增加对话框引导'
+        tooltip: '选中该选项，增加对话引导',
+        displayName: "对话引导"
     })
     isDialogue: boolean = false;
 
@@ -82,6 +87,7 @@ export  class GuideHelper extends Component {
                 let newNode: Node = new Node("guideDialogue");
                 if (newNode) {
                     this.guideDialogue = newNode;
+                    this.guideDialogue.layer = Layers.Enum.UI_2D;
                     this.guideDialogue.addComponent(UITransform);
                     this.guideDialogue.addComponent("GuideDialogue");
                     this.node.addChild(this.guideDialogue);
@@ -97,7 +103,8 @@ export  class GuideHelper extends Component {
     guideDialogue: Node = null;
 
     @property({
-        tooltip: '选中该选项，增加文本引导'
+        tooltip: '选中该选项，增加文本引导',
+        displayName: "文本引导"
     })
     isText: boolean = false;
 
@@ -108,6 +115,7 @@ export  class GuideHelper extends Component {
                 let newNode: Node = new Node("guideText");
                 if (newNode) {
                     this.guideText = newNode;
+                    this.guideText.layer = Layers.Enum.UI_2D;
                     this.guideText.addComponent(UITransform);
                     this.guideText.addComponent("GuideText");
                     this.node.addChild(this.guideText);
@@ -121,6 +129,34 @@ export  class GuideHelper extends Component {
         }
     })
     guideText: Node = null;
+
+    @property({
+        tooltip: '选中该选项，增加图片引导',
+        displayName: "图片引导"
+    })
+    isImage: boolean = false;
+
+    @property({
+        type: Node,
+        visible(this: GuideHelper) {
+            if (!this.guideImage && this.isImage) {
+                let newNode: Node = new Node("guideImage");
+                if (newNode) {
+                    this.guideImage = newNode;
+                    this.guideImage.layer = Layers.Enum.UI_2D;
+                    this.guideImage.addComponent(UITransform);
+                    this.guideImage.addComponent("GuideImage");
+                    this.node.addChild(this.guideImage);
+                }
+            }
+            else if (!this.isImage) {
+                this.node.removeChild(this.guideImage);
+                this.guideImage = null;
+            }
+            return this.isImage;
+        }
+    })
+    guideImage: Node = null;
 
     private _startGuideId: string;
     private _startExecute: boolean = false;
@@ -188,6 +224,7 @@ export  class GuideHelper extends Component {
         this.guideFinger && (this.guideFinger.active = false);
         this.guideDialogue && (this.guideDialogue.active = false);
         this.guideText && (this.guideText.active = false);
+        this.guideImage && (this.guideImage.active = false);
     }
 
     onStartGuide(guideId: string) {
@@ -214,7 +251,7 @@ export  class GuideHelper extends Component {
 
     private execGuide(guideId: string) {
         if (GuideManager.instance.isGuiding) {
-            let guideObj: GuideFinger | GuideText | GuideDialogue;
+            let guideObj: GuideFinger | GuideText | GuideDialogue | GuideImage;
             if (GuideManager.instance.guideType === GuideType.DIALOGUE) {
                 guideObj = this.execDialogueGuide();
             }
@@ -223,6 +260,9 @@ export  class GuideHelper extends Component {
             }
             else if (GuideManager.instance.guideType === GuideType.TEXT) {
                 guideObj = this.execTextGuide(guideId);
+            }
+            else if (GuideManager.instance.guideType === GuideType.IMAGE) {
+                guideObj = this.execImageGuide();
             }
             if (guideObj) {
                 guideObj.execGuide();
@@ -264,6 +304,13 @@ export  class GuideHelper extends Component {
         return undefined;
     }
 
+    private execImageGuide() {
+        this.log(this.execImageGuide, "图片引导");
+        this._guideMask && (this._guideMask.active = true);
+        this.guideImage && (this.guideImage.active = true);
+        return this.guideImage.getComponent(GuideImage);
+    }
+
     /**
      * 获取引导的页面的状态, -1: ui管理中没有这个页面, 0: ui管理中有这个页面, 没有打开, 1: ui管理中有这个页面, 并且打开了
      * @param guideId 
@@ -271,7 +318,7 @@ export  class GuideHelper extends Component {
     private getViewStatus(guideId: string) {
         let status: number = -1;
         let guideAction = GuideManager.instance.guideGroup.get(guideId.toString());
-        let view = ui.getView(guideAction.uiId);
+        let view = ui.getView(guideAction.getData().uiId);
         if (guideAction && view) {
             status = view.opened ? 1 : 0;
         }

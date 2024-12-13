@@ -1,10 +1,12 @@
 import { Debug } from "../../Debugger";
-import { createTip, createText, restoreParent } from "../guide_utils";
+import { createTip, createText, restoreParent, curText } from "../guide_utils";
 import { Component, game, Label, Node, Size, UITransform, _decorator } from "cc";
 import { EDITOR } from "cc/env";
 import { utils } from "../../utils";
 import { GuideManager } from "../GuideManager";
 import { getPriority } from "../../util";
+import { ITextAction } from "../../lib.zest";
+import { RichText } from "cc";
 
 const {
     ccclass, 
@@ -19,10 +21,10 @@ const {
 export  class GuideText extends Component {
 
     @property({
-        type: Node,
-        displayName: '文本内容标签'
+        type: RichText,
+        displayName: '文本内容'
     })
-    private text: Node = null;
+    private text: RichText = null;
 
     @property({
         type: Node,
@@ -50,6 +52,7 @@ export  class GuideText extends Component {
     private _lightTargets: Node[];         //引导高亮节点暂存
     private _targetZIndex: number[] = [];     //目标节点的zIndex
     private _lightParents: Node[] = [];    //高亮父节点
+    private _tempStrArr: string[] = [];
 
     onLoad () {
         this.init();
@@ -74,8 +77,8 @@ export  class GuideText extends Component {
 
     creatNode() {
         if (!this.text) {
-            this.text = createText('text');
-            this.node.addChild(this.text);
+            this.text = createText('text').getComponent(RichText);
+            this.node.addChild(this.text.node);
         }
 
         if (!this.tip) {
@@ -93,7 +96,7 @@ export  class GuideText extends Component {
     onClick() {
         if (this._charIndex < this._descript.length && this._playText) {
             this._playText = false;
-            this.text.getComponent(Label).string = this._descript;
+            this.text.string = this._descript;
             this.tip.active = true;
         }
         else {
@@ -114,12 +117,12 @@ export  class GuideText extends Component {
         this.log(this.execGuide, "开始执行文本引导！");
         this._charIndex = 0;
         this._timeout = 0;
-        this.node.active = true;
         this.tip.active = false;
+        this.text.string = "";
         this.storageGuideData();
-        this._descript = GuideManager.instance.guideAction.descript;
+        this._descript = GuideManager.instance.guideAction.getData<ITextAction>().descript;
         let is: boolean = utils.isNull(this._descript) || utils.isUndefined(this._descript) || this._descript === 'null';
-        is && (this._descript = '');
+        is && (this._descript = "");
 
         if (this._lightTargets) {
             for (let e of this._lightTargets) {
@@ -129,14 +132,14 @@ export  class GuideText extends Component {
             }
         }
         if (this.duration === 0) {
-            this.text.getComponent(Label).string = this._descript;
+            this.text.string = this._descript;
         }
         else {
             this._playText = true;
-            this.text.getComponent(Label).string = '';
+            curText(this._descript, this._tempStrArr);
         }
         if (this.auto) {
-            GuideManager.instance.setTextPos(this, this.text);
+            GuideManager.instance.setTextPos(this, this.text.node);
         }
     }
 
@@ -155,10 +158,9 @@ export  class GuideText extends Component {
             this._timeout += dt;
             if (this._timeout >= this.duration) {
                 this._timeout = 0;
-                this.text.getComponent(Label).string += this._descript[this._charIndex++];
-                if (this._charIndex >= this._descript.length) {
+                this.text.string = this._tempStrArr.pop();
+                if (this._tempStrArr.length === 0) {
                     this._playText = false;
-                    this._charIndex = 0;
                     this.tip.active = true;
                 }
             }

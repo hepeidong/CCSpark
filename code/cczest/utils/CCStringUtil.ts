@@ -114,23 +114,30 @@ export  class CCStringUtil {
     }
 
     /**
-     * 连续替大括号{}内的字符
+     * 连续替换括号内的字符，可以选择是否保留括号
+     * 
+     * 注：只能替换{}、[]、()这三种括号内的字符
      * @param str 
+     * @param parentheses 需要替换的括号
+     * @param isKeep 是否保留括号
      * @param replaceValue 
      * @returns 
      * @example
-     * replaceBrace("{0}年级{1}班的王同学", "三", "5"); //返回的结果是"三年级5班的王同学"
+     * replaceBrace("{0}年级{1}班的王同学", "{}", false, "三", "5"); //返回的结果是"三年级5班的王同学"
      * 
      */
-    public static replaces(str: string, ...replaceValue: any[]): string {
-        for (let i: number = 0; i < replaceValue.length; ++i) {
-            str = str.replace(/\{[^\}]+\}/, replaceValue[i]);
+    public static replaces(str: string, parentheses: string, isKeep: boolean, ...replaceValue: any[]): string {
+        const len = replaceValue.length;
+        for (let i: number = 0; i < len; ++i) {
+            // str = str.replace(/\{[^\}]+\}/, replaceValue[i]);
+            str = this.replace(str, replaceValue[i], parentheses, isKeep);
         }
         return str;
     }
 
     /**
-     * 替换括号内的字符，会保留括号，默认替换{}内的字符
+     * 替换括号内的字符，可以选择是否保留括号，默认替换{}内的字符
+     * 
      * 注：只能替换{}、[]、()这三种括号内的字符
      * @param str 
      * @param replaceValue 
@@ -138,9 +145,9 @@ export  class CCStringUtil {
      * @param isKeep 是否保留括号，默认是不保留
      * @returns 
      * @example
-     * replace("这是一个{AA}", "BB", true, "{}"); //返回结果是"这是一个{BB}"
+     * replace("这是一个{AA}", "BB", "{}", true); //返回结果是"这是一个{BB}"
      */
-    public static replace(str: string, replaceValue: string, isKeep: boolean = false, parentheses: string = "{}") {
+    public static replace(str: string, replaceValue: string, parentheses: string = "{}", isKeep: boolean = false) {
         let exp: RegExp;
         if (parentheses === "{}") {
             exp = /\{[^\}]+\}/;
@@ -174,7 +181,8 @@ export  class CCStringUtil {
     public static compareVersionSame(newV: string, oldV: string) {
         let oldVArr: string[] = oldV.split('.');
         let newVArr: string[] = newV.split('.');
-        for (let i: number = 0; i < oldVArr.length; i++) {
+        const len = oldVArr.length;
+        for (let i: number = 0; i < len; i++) {
             if (parseInt(newVArr[i]) !== parseInt(oldVArr[i])) {
                 return false;
             }
@@ -190,7 +198,8 @@ export  class CCStringUtil {
     public static compareVersion(v1: string, v2: string) {
         let v1Arr: string[] = v1.split('.');
         let v2Arr: string[] = v2.split('.');
-        for (let i: number = 0; i < v1Arr.length; ++i) {
+        const len = v1Arr.length;
+        for (let i: number = 0; i < len; ++i) {
             if (parseInt(v1Arr[i]) > parseInt(v2Arr[i])) return true;
             else if (parseInt(v1Arr[i]) < parseInt(v2Arr[i])) return false;
             else continue;
@@ -216,7 +225,7 @@ export  class CCStringUtil {
      * 构建富文本格式字符串, 传入的参数格式为:这是=00ff00/富文本=0fffff, 颜色值不传,则默认白色
      * @param str 
      * @example 
-     * buildRichText('这是=00ff00/富文本=0fffff'); //<color=#00ff00>这是</c><color=#0fffff>富文本</color>
+     * buildRichText('这是=00ff00/富文本=0fffff'); //<color=#00ff00>这是</color><color=#0fffff>富文本</color>
      */
     public static buildRichText(str: string): string {
         let slt: string[] = str.split('/');
@@ -278,8 +287,12 @@ export  class CCStringUtil {
         // return this.reverse(retStr);
     }
 
-    //字符串取反
-    private static reverse(str: string) {
+    /**
+     * 字符串取反
+     * @param str 
+     * @returns 
+     */
+    public static reverse(str: string) {
         let temp1: string = '';
         let temp2: string = '';
         let hard: number = Math.floor(str.length / 2) - 1;
@@ -494,7 +507,8 @@ export  class CCStringUtil {
         str = str.substring(num + 1); // 取得所有参数 
 
         const arr = str.split('&'); // 各个参数放到数组里
-        for (let i = 0; i < arr.length; i++) {
+        const len = arr.length;
+        for (let i = 0; i < len; i++) {
             num = arr[i].indexOf('=');
             if (num > 0) {
                 name = arr[i].substring(0, num);

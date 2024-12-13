@@ -1,4 +1,4 @@
-import { IComponent } from "../lib.ccspark";
+import { IComponent } from "../lib.zest";
 import { tools } from "../tools";
 import { createMap, removeElement } from "./ecs-utils";
 

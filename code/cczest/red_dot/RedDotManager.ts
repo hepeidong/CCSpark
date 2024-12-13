@@ -1,5 +1,5 @@
 import { Node } from "cc";
-import { IRedDotAction, RedDotChange } from "../lib.ccspark";
+import { IRedDotAction, RedDotChange } from "../lib.zest";
 import { Assert } from "../exceptions/Assert";
 import { RedDotNode } from "./RedDotNode";
 

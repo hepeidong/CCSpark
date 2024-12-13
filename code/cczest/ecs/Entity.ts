@@ -6,7 +6,7 @@ import { ECS_DEBUG } from "./ECSDef";
 import { ComponentTypes } from "./ComponentTypes";
 import { utils } from "../utils";
 import { Debug } from "../Debugger";
-import { EntityChange, IComponent, IBaseEntity, IEntityChange, IEntityManager } from "../lib.ccspark";
+import { EntityChange, IComponent, IBaseEntity, IEntityChange, IEntityManager } from "../lib.zest";
 import { EventSystem } from "../event";
 import { Node } from "cc";
 

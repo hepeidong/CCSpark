@@ -1,5 +1,5 @@
 import { sys } from "cc";
-import { IHttpError } from "../lib.ccspark";
+import { IHttpError } from "../lib.zest";
 import { Debug } from "../Debugger";
 import { SAFE_CALLBACK } from "../Define";
 import { Assert } from "../exceptions/Assert";

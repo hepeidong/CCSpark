@@ -1,5 +1,5 @@
 import { Debug } from "../Debugger";
-import { cc_zest_win_activity, IActivityManager, IWindowBase } from "../lib.ccspark";
+import { cc_zest_win_activity, IActivityManager, IWindowBase } from "../lib.zest";
 import { tools } from "../tools";
 import { DialoglManager } from "./DialoglManager";
 import { WindowLayer } from "./WindowLayer";

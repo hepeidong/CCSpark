@@ -1,4 +1,4 @@
-import { ILayerManager, IWindowBase } from "../lib.ccspark";
+import { ILayerManager, IWindowBase } from "../lib.zest";
 import { tools } from "../tools";
 import { WindowLayer } from "./WindowLayer";
 
@@ -24,7 +24,8 @@ export abstract class LayerManager implements ILayerManager {
     }
 
     public setDisappears(visible: boolean) {
-        for (let i: number = 0; i < this._list.length; ++i) {
+        const len = this._list.length;
+        for (let i: number = 0; i < len; ++i) {
             if (!visible) {
                 this._list[i]['hideView']();
             }
@@ -55,7 +56,8 @@ export abstract class LayerManager implements ILayerManager {
     }
 
     public hasView(view: IWindowBase): boolean {
-        for (let i: number = 0; i < this._list.length; ++i) {
+        const len = this._list.length;
+        for (let i: number = 0; i < len; ++i) {
             if (this._list[i] === view) {
                 return true;
             }
@@ -64,7 +66,8 @@ export abstract class LayerManager implements ILayerManager {
     }
 
     public removeView(view: IWindowBase): boolean {
-        for (let i: number = 0; i < this._list.length; ++i) {
+        const len = this._list.length;
+        for (let i: number = 0; i < len; ++i) {
             let ele: IWindowBase = this._list[i] as IWindowBase;
             if (ele === view) {
                 view.close();
@@ -83,7 +86,8 @@ export abstract class LayerManager implements ILayerManager {
         //         }
         //     }
         // });
-        for (let i: number = 0; i < this._list.length; ++i) {
+        const len = this._list.length;
+        for (let i: number = 0; i < len; ++i) {
             this._list[i].close(this.canRelease, switchingScene);
         }
         this._list = null;

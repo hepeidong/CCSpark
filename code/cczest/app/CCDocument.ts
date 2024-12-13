@@ -1,4 +1,4 @@
-import { IDocument } from "../lib.ccspark";
+import { IDocument } from "../lib.zest";
 import { Proxy } from "../puremvc";
 import { utils } from "../utils";
 import { DataSave } from "./file-save";
@@ -20,9 +20,10 @@ export class CCDocument<T> extends Proxy<T> implements IDocument {
     private get propKeys(): string[] { return this.data["_propKeys"]; }
 
     public getArchive() {
-        if (Array.isArray(this.propKeys)) {
+        const propKeys = this.propKeys;
+        if (Array.isArray(propKeys)) {
             const archive = {};
-            for (const key of this.propKeys) {
+            for (const key of propKeys) {
                 archive[key] = this.data[key];
             }
             return archive;

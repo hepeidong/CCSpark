@@ -11,7 +11,7 @@ import { GuideManager } from "../GuideManager";
 import { getPriority } from "../../util";
 import { GuideAction } from "../GuideAction";
 import { Debug } from "../../Debugger";
-import { ITweenAnimat } from "../../lib.ccspark";
+import { ITweenAnimat } from "../../lib.zest";
 
 
 const {
@@ -36,6 +36,10 @@ export  class GuideFinger extends Component {
     })
     private finger: Node = null;
 
+    @property({
+        tooltip: "手指的初始位置"
+    })
+    position: Vec3 = v3();
 
     private _auto: boolean = false;           //自动执行下一步引导
     private _clicked: boolean = false;        //防止重复点击
@@ -73,6 +77,7 @@ export  class GuideFinger extends Component {
             this.finger = new Node('finger');
             this.finger.addComponent(UITransform);
             this.node.addChild(this.finger);
+            this.finger.position = this.position;
         }
         if (!this._effect) {
             this._effect = createSprite('effect');
@@ -84,7 +89,6 @@ export  class GuideFinger extends Component {
     /**执行引导 */
     public execGuide() {
         this.log(this.execGuide, "开始执行手指引导！");
-        this.node.active = true;
         this._clicked = false;
         this.storageGuideData();
         this.fingerTurn();
@@ -167,7 +171,8 @@ export  class GuideFinger extends Component {
         }
         else {
             this._effectTweenAnimat.defaultClip().onStop(() => {
-                for (let i: number = 0; i < this._effect.children.length; ++i) {
+                const len = this._effect.children.length;
+                for (let i: number = 0; i < len; ++i) {
                     this._effect.children[i].active = false;
                     if (this._effect.children[i].getComponent(Animation)) {
                         tweenAnimat(this._effect.children[i]).defaultClip().stop();
@@ -190,12 +195,16 @@ export  class GuideFinger extends Component {
     private nextGuide() {
         if (!this._clicked && this._guideTargets && this._lightTargets) {
             this._clicked = true;
-            for (let guideTarget of this._guideTargets) {
-                for (let i: number = 0; i < guideTarget.guideIds.length; ++i) {
-                    if (this._guideInfo.guideId === guideTarget.guideIds[i]) {
-                        guideTarget.guideIds.splice(i, 1);
+            const guideTargets = this._guideTargets;
+            const lightTargets = this._lightTargets;
+            for (let guideTarget of guideTargets) {
+                const guideIds = guideTarget.guideIds;
+                const len = guideIds.length;
+                for (let i: number = 0; i < len; ++i) {
+                    if (this._guideInfo.guideId === guideIds[i]) {
+                        guideIds.splice(i, 1);
                         let index: number = 0;
-                        for (let ele of this._lightTargets) {
+                        for (let ele of lightTargets) {
                             restoreParent(ele, this._targetZIndex[index], this._lightParents[index++]);
                         }
                         this._targetZIndex.splice(0, this._targetZIndex.length);

@@ -2,8 +2,7 @@ import { SAFE_CALLBACK } from "../Define";
 import { SpineLoad } from "../res/LoadAnimation";
 import { AnimatBase } from "./AnimatBase";
 import { Node, sp } from "cc";
-import { cc_zest_animat_resolved_type, cc_zest_animat_spineAnimat_type, ISpineAnimat } from "../lib.ccspark";
-import { tools } from "../tools";
+import { cc_zest_animat_resolved_type, cc_zest_animat_spineAnimat_type, ISpineAnimat } from "../lib.zest";
 
 
 export  class SpineAnimat extends AnimatBase<cc_zest_animat_spineAnimat_type> {
@@ -121,18 +120,13 @@ export  class SpineAnimat extends AnimatBase<cc_zest_animat_spineAnimat_type> {
             if (this._status === 'pending') {
                 this._status = 'resolved';
                 const animat = this._animatList.back(this.index);
-                let props: ISpineAnimat = animat.props;
+                const props: ISpineAnimat = animat.props;
                 if (!props.played) {
-                    if (this.index === 0) {
-                        this.playInterval();
+                    if (props.beginFrame) {
+                        this.setSpineAniWithFrame(props);
                     }
-                    else {
-                        props.repeatCount--;
-                        if (props.beginFrame) {
-                            this.setSpineAniWithFrame(props);
-                        }
-                        this._skeleton.addAnimation(props.trackIndex, props.name, props.loop, props.delay);
-                    }
+                    props.repeatCount--;
+                    this._skeleton.addAnimation(props.trackIndex, props.name, props.loop, props.delay);
                 }
             }
         } catch (error) {
@@ -162,25 +156,14 @@ export  class SpineAnimat extends AnimatBase<cc_zest_animat_spineAnimat_type> {
         }
     }
 
-    private playInterval() {
-        const animat = this._animatList.back(this.index);
-        const delay = animat.props.delay;
-        tools.Timer.setInterval(() => {
-            const cuurAnimat = this._animatList.back(this.index);
-            let props: ISpineAnimat = cuurAnimat.props;
-            props.repeatCount--;
-            this._skeleton.setAnimation(props.trackIndex, props.name, props.loop);
-        }, delay);
-    }
-
     private registerEventStart() {
         this._skeleton.setStartListener((evt: any) => {
             if (this._animatList.length > 0) {
                 const animat = this._animatList.back(this.index);
-                let callbacks: cc_zest_animat_resolved_type[] = animat.callbacks;
-                for (let e of callbacks) {
-                    if (e.type === 'play') {
-                        SAFE_CALLBACK(e.call, evt);
+                const callbacks: cc_zest_animat_resolved_type[] = animat.callbacks;
+                for (const callback of callbacks) {
+                    if (callback.type === 'play') {
+                        SAFE_CALLBACK(callback.call, evt);
                     }
                 }
             }
@@ -191,9 +174,10 @@ export  class SpineAnimat extends AnimatBase<cc_zest_animat_spineAnimat_type> {
         this._skeleton.setCompleteListener((evt: any) => {
             if (this._animatList.length > 0) {
                 const animat = this._animatList.back(this.index);
-                for (let e of animat.callbacks) {
-                    if (e.type === 'stop') {
-                        SAFE_CALLBACK(e.call, evt);
+                const callbacks = animat.callbacks;
+                for (const callback of callbacks) {
+                    if (callback.type === 'stop') {
+                        SAFE_CALLBACK(callback.call, evt);
                     }
                 }
                 const props = animat.props;

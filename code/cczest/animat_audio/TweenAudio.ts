@@ -1,7 +1,7 @@
 import { Debug } from "../Debugger";
 import { SAFE_CALLBACK } from "../Define";
 import { Assert } from "../exceptions/Assert";
-import { cc_zest_audio_saudio_resolved_type, cc_zest_audio_type, IAudio, IAudioBGM, ILoader, ITweenAudio } from "../lib.ccspark";
+import { cc_zest_audio_saudio_resolved_type, cc_zest_audio_type, IAudio, IAudioBGM, ILoader, ITweenAudio } from "../lib.zest";
 import { AudioClip, resources } from "cc";
 import { AudioEngine } from "./AudioEngine";
 import { Res } from "../res/Res";
@@ -200,7 +200,8 @@ export class TweenAudio implements ITweenAudio {
     }
 
     public pause(): TweenAudio {
-        for (let i: number = 0; i < this._audioList.length; ++i) {
+        const len = this._audioList.length;
+        for (let i: number = 0; i < len; ++i) {
             let audioPro: cc_zest_audio_type = TweenAudio._audioPool.get(this._audioList[i]);
             if (audioPro && audioPro.audioID > -1) {
                 TweenAudio.audioEngine.pause(audioPro.audioID);
@@ -213,7 +214,8 @@ export class TweenAudio implements ITweenAudio {
     }
 
     public resume(): TweenAudio {
-        for (let i: number = 0; i < this._audioList.length; ++i) {
+        const len = this._audioList.length;
+        for (let i: number = 0; i < len; ++i) {
             let audioPro: cc_zest_audio_type = TweenAudio._audioPool.get(this._audioList[i]);
             if (audioPro && audioPro.audioID > -1) {
                 TweenAudio.audioEngine.resume(audioPro.audioID);
@@ -234,7 +236,8 @@ export class TweenAudio implements ITweenAudio {
     }
 
     private stopAudio() {
-        for (let i: number = 0; i < this._audioList.length; ++i) {
+        const len = this._audioList.length;
+        for (let i: number = 0; i < len; ++i) {
             let audioPro: cc_zest_audio_type = TweenAudio._audioPool.get(this._audioList[i]);
             
             if (audioPro && audioPro.audioID > -1) {
@@ -336,7 +339,8 @@ export class TweenAudio implements ITweenAudio {
     }
     /**一次性播放队列所有音频 */
     private playAudio() {
-        for (let i: number = 0; i < this._audioList.length; ++i) {
+        const len = this._audioList.length;
+        for (let i: number = 0; i < len; ++i) {
             let key: string = this._audioList[i];
             let audioPro: cc_zest_audio_type = TweenAudio._audioPool.get(key);
             let audioID: number;
@@ -355,27 +359,30 @@ export class TweenAudio implements ITweenAudio {
             TweenAudio._audioPool.set(key, audioPro);
             //设置音频结束后的回调
             TweenAudio.audioEngine.setFinishCallback(audioID, () => this.onFinishCallback(audioPro, audioID));
-            for (let e of audioPro.callbacks) {
-                if (e.type === 'play') {
-                    SAFE_CALLBACK(e.call, TweenAudio.audioEngine.getCurrentTime(audioID));
+            const callbacks = audioPro.callbacks;
+            for (const callback of callbacks) {
+                if (callback.type === 'play') {
+                    SAFE_CALLBACK(callback.call, TweenAudio.audioEngine.getCurrentTime(audioID));
                 }
             }
         }
     }
     //非顺序播放模式下,每个音频结束的回调
     private onFinishCallback(audioPro: cc_zest_audio_type, audioID: number) {
-        for (let e of audioPro.callbacks) {
-            if (e.type === 'stop') {
-               SAFE_CALLBACK(e.call, TweenAudio.audioEngine.getDuration(audioID));
+        const callbacks = audioPro.callbacks;
+        for (const callback of callbacks) {
+            if (callback.type === 'stop') {
+               SAFE_CALLBACK(callback.call, TweenAudio.audioEngine.getDuration(audioID));
             }
         }
         TweenAudio.audioEngine.stop(audioID);
     }
     //顺序播放模式下每个音频结束的回调
     private onFinishCallbackInOrder(audioPro: cc_zest_audio_type, audioID: number) {
-        for (let e of audioPro.callbacks) {
-            if (e.type === 'stop') {
-               SAFE_CALLBACK(e.call, TweenAudio.audioEngine.getDuration(audioID));
+        const callbacks = audioPro.callbacks;
+        for (const callback of callbacks) {
+            if (callback.type === 'stop') {
+               SAFE_CALLBACK(callback.call, TweenAudio.audioEngine.getDuration(audioID));
             }
         }
         this._audioIndex++;

@@ -2,7 +2,7 @@ import { EventSystem } from "../event";
 import { Facade } from "../puremvc";
 import { SceneManager } from "./SceneManager";
 import { setParentType } from "../decorator/Decorator";
-import { IAssetRegister, IGameWorld, ISceneManager, IViewComplete, IViewProgress, ViewComplete, ViewProgress } from "../lib.ccspark";
+import { IAssetRegister, IGameWorld, ISceneManager, IViewComplete, IViewProgress, ViewComplete, ViewProgress } from "../lib.zest";
 import { director, Game, game, ISchedulable, Prefab, Scheduler } from "cc";
 import { STARTUP } from "../Define";
 import { UUID } from "../utils";
@@ -10,7 +10,6 @@ import { Res } from "../res/Res";
 import { GameWorldEvent, GamePlatform } from "./AppEnum";
 import { DataSave } from "./file-save";
 import { AssetRegister } from "../res/AssetRegister";
-import { Debug } from "../Debugger";
 import { Asset } from "cc";
 
 
@@ -117,7 +116,8 @@ export class CCGameWorld extends Facade implements IGameWorld, ISchedulable {
      * @returns 
      */
     public getInitialAsset<T extends Asset>(filename: string, type: {new (): T}) {
-        for (const asset of this._assets) {
+        const assets = this._assets;
+        for (const asset of assets) {
             if (asset instanceof type) {
                 if (filename === asset.name) {
                     return asset;
@@ -129,7 +129,8 @@ export class CCGameWorld extends Facade implements IGameWorld, ISchedulable {
 
      /**清理初始加载的资源，即首页资源，会把引用计数减少1，让引擎进行释放检查 */
      public clearInitialingAssets() {
-        for (const asset of this._assets) {
+        const assets = this._assets;
+        for (const asset of assets) {
             Res.loader.delete(asset);
         }
     }

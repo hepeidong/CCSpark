@@ -180,7 +180,7 @@ export class Res {
      * @param remoteUrl 远程纹理资源的路径
      */
     public static setRemoteSpriteFrame(target: Node|Sprite, remoteUrl: string) {
-        this.loader.setSpriteFrame(target, remoteUrl);
+        return this.loader.setSpriteFrame(target, remoteUrl);
     }
 
     /**

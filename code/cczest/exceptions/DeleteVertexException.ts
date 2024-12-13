@@ -1,9 +1,9 @@
 import { decorator } from "../decorator/Decorator";
 import { Exception } from "./Exception";
 
-const {ccsclass} = decorator;
+const {zestClass} = decorator;
 
-@ccsclass("DeleteVertexException")
+@zestClass("DeleteVertexException")
 export class DeleteVertexException extends Exception {
     private _obj: any;
     constructor(message: string, obj: any) {

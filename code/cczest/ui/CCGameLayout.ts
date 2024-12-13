@@ -1,5 +1,5 @@
 import { SAFE_CALLBACK, SAFE_CALLBACK_CALLER } from "../Define";
-import { IGameLayout, ITweenAnimat } from "../lib.ccspark";
+import { IGameLayout, ITweenAnimat } from "../lib.zest";
 import { CCBaseLayout } from "../app/CCBaseLayout";
 import { Animation, AnimationClip, Button, Node, Tween, tween, v3, _decorator } from "cc";
 import { EventSystem } from "../event";

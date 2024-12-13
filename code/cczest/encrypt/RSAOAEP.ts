@@ -1,9 +1,9 @@
 import { decorator } from "../decorator";
 import { Encode, EncryptAlgorithm } from "./EncryptAlgorithm";
 
-const {ccsclass} = decorator;
+const {zestClass} = decorator;
 
-@ccsclass("RSAOAEP")
+@zestClass("RSAOAEP")
 export class RSAOAEP extends EncryptAlgorithm<CryptoKeyPair> {
     constructor() {
         super();

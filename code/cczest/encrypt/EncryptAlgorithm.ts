@@ -15,7 +15,7 @@ export abstract class EncryptAlgorithm<T = any> implements IAlgorithm {
     protected secretkey: T;//用于加密和解密的密钥，这是私有密钥，不能暴露
     
     constructor() {
-        // this.secretkey = secretkey;
+        
     }
 
     abstract createCryptoKey(type?: string): Promise<void>;

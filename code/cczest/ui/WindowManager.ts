@@ -4,7 +4,7 @@ import { DialoglManager } from "./DialoglManager";
 import { ActivityManager } from "./ActivityManager";
 import { ToastManager } from "./ToastManager";
 import { TopManager } from "./TopManager";
-import { Constructor, IWindowBase } from "../lib.ccspark";
+import { Constructor, IWindowBase } from "../lib.zest";
 import { WindowLayer } from "./WindowLayer";
 import { TouchEffect } from "./TouchEffect";
 import { Assert } from "../exceptions/Assert";
@@ -131,6 +131,14 @@ export class WindowManager {
             }
             manager.addView(view, ...args);
         }
+    }
+
+    /**
+     * 打开触摸特效，默认是打开的，可以通过这个函数控制什么时候可以显示触摸特效，什么时候不显示触摸特效
+     * @param open 
+     */
+    public openTouchEffect(open: boolean) {
+        this._touchEffect.openTouchEffect(open);
     }
 
     /**

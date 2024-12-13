@@ -6,7 +6,7 @@
  * 4.无向网
  * ***************************************************************/
 
-import { cc_zest_alGraph_edge_type, cc_zest_alGraph_vertex_type } from "../lib.ccspark";
+import { cc_zest_alGraph_edge_type, cc_zest_alGraph_vertex_type } from "../lib.zest";
 import { Debug } from "../Debugger";
 import { Assert } from "../exceptions/Assert";
 
@@ -190,7 +190,8 @@ export class CCALGraph {
             return { condition: callback(v), vexList: vexList };
         }
         let visited: number[] = [];
-        for (let i: number = 0; i < this._vertex_num; ++i) {
+        const num = this._vertex_num;
+        for (let i: number = 0; i < num; ++i) {
             visited[i] = 0;
         }
         visited[v] = 1;

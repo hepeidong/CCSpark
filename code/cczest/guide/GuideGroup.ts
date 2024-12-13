@@ -7,6 +7,7 @@ import { tools } from "../tools";
 import { EventSystem } from "../event";
 import { EventType, GuideType } from "./GuideEnum";
 import { utils } from "../utils";
+import { IFingerAction, ITextAction } from "../lib.zest";
 
 
 export class GuideGroup {
@@ -35,9 +36,10 @@ export class GuideGroup {
     public get isAgainExecute(): boolean { return this._isAgainExecute; }
     public get guideTargets(): GuideTarget[] {
         let targets: GuideTarget[] = [];
-        for (let e of this._currentGuide.targetId) {
-            if (this._guideSearch.getGuideTargets().has(e)) {
-                targets.push(this._guideSearch.getGuideTargets().get(e));
+        const targetId = this._currentGuide.getData<IFingerAction|ITextAction>().targetId;
+        for (const id of targetId) {
+            if (this._guideSearch.getGuideTargets().has(id)) {
+                targets.push(this._guideSearch.getGuideTargets().get(id));
             }
         }
         return targets;
@@ -95,7 +97,7 @@ export class GuideGroup {
                 if (guideAction.syncId.length > 0) {
                     //暂存上一步引导的uiId
                     this._isGuideLaunched = true;
-                    this._lastUiId = guideAction.uiId;
+                    this._lastUiId = guideAction.getData<IFingerAction|ITextAction>().uiId;
                     const guideId = guideAction.syncId;
 
                     const currentGuide = this._group.get(guideId);
@@ -153,7 +155,7 @@ export class GuideGroup {
             this.guideComplete();
             if (this._currentGuide.syncId.length > 0) {
                 //暂存上一步引导的uiId
-                this._lastUiId = this._currentGuide.uiId;
+                this._lastUiId = this._currentGuide.getData<IFingerAction|ITextAction>().uiId;
                 const guideAction = this._group.get(this._currentGuide.syncId);
                 this.setCurrentGuide(guideAction);
                 if (this.judgeCurrentGuide() && !this._close) {
@@ -205,12 +207,12 @@ export class GuideGroup {
 
     /**是否切换了UI */
     private switchUI() {
-        this.log(this.switchUI, "执行引导所在的页面：", `上一个引导执行所在的页面“${this._lastUiId}”`, `当前引导执行所在的页面“${this._currentGuide.uiId}”`);
-        if (this._lastUiId.length === 0) {
+        this.log(this.switchUI, "执行引导所在的页面：", `上一个引导执行所在的页面“${this._lastUiId}”`, `当前引导执行所在的页面“${this._currentGuide.getData().uiId}”`);
+        if (typeof this._lastUiId !== "string") {
             return false;
         }
 
-        else return this._lastUiId !== this._currentGuide.uiId;
+        else return this._lastUiId !== this._currentGuide.getData().uiId;
     }
 
     /**当前这一步引导开始执行 */
@@ -223,7 +225,7 @@ export class GuideGroup {
         ) {
             this.newStepGuide();
         }
-        else if (this._guideSearch.isViewOpen(this._currentGuide.uiId)) {
+        else if (this._guideSearch.isViewOpen(this._currentGuide.getData().uiId)) {
             this.newStepGuide();
         }
         else {
@@ -235,7 +237,7 @@ export class GuideGroup {
         this.log(this.newStepGuide, '新的引导开始执行', this._currentGuide.guideId);
         this._isGuiding = true;
         this._isAgainExecute = false;  //开始后，重新发起引导的标志要重置为false
-        EventSystem.event.emit(GuideGroup.Event.SHOW_GUIDE_MASK, this._currentGuide.targetId[0]);
+        EventSystem.event.emit(GuideGroup.Event.SHOW_GUIDE_MASK, this._currentGuide.getData().uiId);
         EventSystem.event.emit(EventType.GUIDE_START, this._currentGuide.guideId);
     }
 

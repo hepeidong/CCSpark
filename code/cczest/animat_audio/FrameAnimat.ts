@@ -2,7 +2,7 @@ import { SAFE_CALLBACK } from "../Define";
 import { ClipLoad } from "../res/LoadAnimation";
 import { AnimatBase } from "./AnimatBase";
 import { Animation, AnimationClip, AnimationState, Node } from "cc";
-import { cc_zest_animat_frameAnimat_type, cc_zest_animat_resolved_type, IFrameAnimat } from "../lib.ccspark";
+import { cc_zest_animat_frameAnimat_type, cc_zest_animat_resolved_type, IFrameAnimat } from "../lib.zest";
 import { utils } from "../utils";
 
 export  class FrameAnimat extends AnimatBase<cc_zest_animat_frameAnimat_type> {

@@ -1,9 +1,9 @@
 import { decorator } from "../decorator/Decorator";
 import { Exception } from "./Exception";
 
-const {ccsclass} = decorator;
+const {zestClass} = decorator;
 
-@ccsclass("CreateObjectException")
+@zestClass("CreateObjectException")
 export class CreateObjectException extends Exception {
     private _socket: any;
     constructor(message: string, socket: any) {

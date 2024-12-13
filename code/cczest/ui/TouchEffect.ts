@@ -5,7 +5,9 @@ import { setPriority } from "../util";
 import { WindowManager } from "./WindowManager";
 import { Debug } from "../Debugger";
 import { tools } from "../tools";
-import { ITweenAnimat } from "../lib.ccspark";
+import { ITweenAnimat } from "../lib.zest";
+import { VERSION } from "cc";
+import { utils } from "../utils";
 
 const MAX_COUNT = 20;
 
@@ -14,6 +16,7 @@ const _worldVec3Temp = v3();
 
 export class TouchEffect {
     private _index: number;
+    private _touchParent: Node;
     private _target: Node;
     private _pool: NodePool;
     private _tweenAnimatPool: tools.ObjectPool<ITweenAnimat>;
@@ -24,41 +27,17 @@ export class TouchEffect {
     }
 
     public init(uiLayer: number) {
-        let touchParent: Node = new Node('touchParent');
-        touchParent.layer = uiLayer;
-        let ui = touchParent.getComponent(UITransform);
+        this._touchParent = new Node('touchParent');
+        this._touchParent.layer = uiLayer;
+        let ui = this._touchParent.getComponent(UITransform);
         if (!ui) {
-            ui = touchParent.addComponent(UITransform);
+            ui = this._touchParent.addComponent(UITransform);
         }
         ui.width = 2000;
         ui.height = 2000;
-        setPriority(touchParent, MAX_PRIORITY);
-        WindowManager.instance.addToTop(touchParent);
-        let overversion: boolean = true; //版本是否超过3.4
-        if (touchParent.eventProcessor) {
-            //版本兼容
-            const touchListener = touchParent.eventProcessor.touchListener;
-            if (touchListener) {
-                overversion = false;
-                touchListener.setSwallowTouches(false);
-            }
-        }
-        touchParent.on(Node.EventType.TOUCH_START, (evt: EventTouch) => {
-            if (overversion) {
-                evt.preventSwallow = true;
-            }
-            this.play(evt.getUILocation());
-        }, this);
-        touchParent.on(Node.EventType.TOUCH_END, (evt: EventTouch) => {
-            if (overversion) {
-                evt.preventSwallow = true;
-            }
-        });
-        touchParent.on(Node.EventType.TOUCH_CANCEL, (evt: EventTouch) => {
-            if (overversion) {
-                evt.preventSwallow = true;
-            }
-        });
+        setPriority(this._touchParent, MAX_PRIORITY);
+        WindowManager.instance.addToTop(this._touchParent);
+        this.registerEvent();
     }
 
     /**
@@ -72,7 +51,53 @@ export class TouchEffect {
         }
     }
 
-    public play(worldPos: Vec2) {
+    /**
+     * 打开触摸特效，默认是打开的，可以通过这个函数控制什么时候可以显示触摸特效，什么时候不显示触摸特效
+     * @param open 
+     */
+    public openTouchEffect(open: boolean) {
+        if (open) {
+            this.registerEvent();
+        }
+        else {
+            this.removeEvent();
+        }
+    }
+
+    private registerEvent() {
+        let overversion: boolean = utils.StringUtil.compareVersion(VERSION, "3.4"); //版本是否超过3.4
+        if (!overversion) {
+            //版本兼容
+            const touchListener = this._touchParent.eventProcessor.touchListener;
+            if (touchListener) {
+                touchListener.setSwallowTouches(false);
+            }
+        }
+        this._touchParent.on(Node.EventType.TOUCH_START, (evt: EventTouch) => {
+            if (overversion) {
+                evt.preventSwallow = true;
+            }
+            this.play(evt.getUILocation());
+        }, this);
+        this._touchParent.on(Node.EventType.TOUCH_END, (evt: EventTouch) => {
+            if (overversion) {
+                evt.preventSwallow = true;
+            }
+        });
+        this._touchParent.on(Node.EventType.TOUCH_CANCEL, (evt: EventTouch) => {
+            if (overversion) {
+                evt.preventSwallow = true;
+            }
+        });
+    }
+
+    private removeEvent() {
+        this._touchParent.off(Node.EventType.TOUCH_START);
+        this._touchParent.off(Node.EventType.TOUCH_END);
+        this._touchParent.off(Node.EventType.TOUCH_CANCEL);
+    }
+
+    private play(worldPos: Vec2) {
         if (this._pool.size() <= MAX_COUNT) {
             let node: Node;
             if (this._pool.size() > 0) {

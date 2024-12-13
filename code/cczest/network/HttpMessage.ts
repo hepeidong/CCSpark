@@ -1,4 +1,4 @@
-import { IHttpError, IHttpFail, IHttpMessage, IHttpResponse } from "../lib.ccspark";
+import { IHttpError, IHttpFail, IHttpMessage, IHttpResponse } from "../lib.zest";
 import { Debug } from "../Debugger";
 import { SAFE_CALLBACK, SAFE_CALLBACK_CALLER } from "../Define";
 import { Proxy } from "../puremvc";

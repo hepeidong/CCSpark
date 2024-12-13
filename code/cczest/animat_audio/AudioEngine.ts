@@ -33,7 +33,8 @@ export class AudioEngine {
 
     public stopAll() {
         this._audioBGM.stop();
-        for (const k in this._audioAll) {
+        const audioAll = this._audioAll;
+        for (const k in audioAll) {
             const audio = this._audioAll[k];
             audio.stop();
         }
@@ -42,8 +43,9 @@ export class AudioEngine {
     /**游戏进入后台的音频处理 */
     public backgroundJob() {
         this._audioBGM.pause();
-        for (const k in this._audioAll) {
-            const audio = this._audioAll[k];
+        const audioAll = this._audioAll;
+        for (const k in audioAll) {
+            const audio = audioAll[k];
             audio.pause();
         }
     }
@@ -53,8 +55,9 @@ export class AudioEngine {
         if (this._audioBGM.state === AudioSource.AudioState.PAUSED || this._audioBGM.state === AudioSource.AudioState.INTERRUPTED) {
             this._audioBGM.play();
         }
-        for (const k in this._audioAll) {
-            const audio = this._audioAll[k];
+        const audioAll = this._audioAll;
+        for (const k in audioAll) {
+            const audio = audioAll[k];
             if (audio.state === AudioSource.AudioState.PAUSED || audio.state === AudioSource.AudioState.INTERRUPTED) {
                 audio.play();
             }
@@ -182,8 +185,9 @@ export class AudioEngine {
      */
     public playMusic(clip: AudioClip, loop: boolean, volume: number) {
         this._audioBGM.pause();
-        for (const k in this._audioAll) {
-            const audio = this._audioAll[k];
+        const audioAll = this._audioAll;
+        for (const k in audioAll) {
+            const audio = audioAll[k];
             audio.pause();
         }
         const audioID = this.createAudioSource(clip, loop, volume);
@@ -199,8 +203,9 @@ export class AudioEngine {
                 delete this._audioFinishCallbacks[audioID];
             }
             this._audioBGM.play();
-            for (const k in this._audioAll) {
-                const audio = this._audioAll[k];
+            const audioAll = this._audioAll;
+            for (const k in audioAll) {
+                const audio = audioAll[k];
                 audio.play();
             }
         }, time);

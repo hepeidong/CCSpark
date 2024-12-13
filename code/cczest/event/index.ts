@@ -1,5 +1,5 @@
 import { Button, Component, EventHandler, Node, Slider } from "cc";
-import { IListener, INotify, IEventBus } from "../lib.ccspark";
+import { IListener, INotify, IEventBus } from "../lib.zest";
 import { Debug } from "../Debugger";
 import { CCObserver } from "./CCObserver";
 import { EventListeners, CCHandler } from "./EventListeners";

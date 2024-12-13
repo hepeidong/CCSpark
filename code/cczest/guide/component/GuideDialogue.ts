@@ -1,25 +1,25 @@
 import { Component, game, Label, Node, UITransform, _decorator } from "cc";
 import { EDITOR } from "cc/env";
 import { GuideManager } from "../GuideManager";
-import { createSprite, createText, createTip } from "../guide_utils";
+import { createText, createTip, curText } from "../guide_utils";
 import { Debug } from "../../Debugger";
 import { utils } from "../../utils";
 import { instantiate } from "cc";
 import { Animation } from "cc";
 import { tween } from "cc";
 import { ActorAction, ActorMoveModel, SourceType, TweenEasingType } from "../GuideEnum";
-import { Vec3 } from "cc";
 import { TweenEasing } from "cc";
 import { find } from "cc";
-import { IDialogAction, ITweenAnimat } from "../../lib.ccspark";
+import { IDialogAction, ITweenAnimat } from "../../lib.zest";
 import { Res } from "../../res/Res";
 import { tweenAnimat } from "../../animat_audio";
 import { v3 } from "cc";
 import { Sprite } from "cc";
 import { Layers } from "cc";
-import { SpriteFrame } from "cc";
 import { sp } from "cc";
 import { UIOpacity } from "cc";
+import { RichText } from "cc";
+import { dragonBones } from "cc";
 
 const _vec3Temp = v3();
 
@@ -56,11 +56,12 @@ export  class GuideDialogue extends Component {
 
     private _playText: boolean = false;
     private _timeout: number = 0;
-    private _charIndex: number = 0;
     private _descript: string;
     private _roleMap: Map<string, Node>;
-    private _currentText: Label;
+    private _currentText: RichText;
     private _tweenAnimat: ITweenAnimat;
+    private _tempStrArr: string[] = [];
+    private _actorAction: string;
 
     onLoad () {
         this.init();
@@ -81,7 +82,6 @@ export  class GuideDialogue extends Component {
         ui.height = 2000;
         this._playText = false;
         this._timeout = 0;
-        this._charIndex = 0;
         this._roleMap =new Map();
     }
 
@@ -107,22 +107,8 @@ export  class GuideDialogue extends Component {
     }
 
     onClick() {
-        // if (this._charIndex < this._descript.length && this._playText) {
-        //     this._playText = false;
-        //     let index: number = GuideManager.instance.guideInfo.npc - 1;
-        //     this.roleList[index].getChildByName('text').getComponent(Label).string = this._descript;
-        //     this.tip.active = true;
-        // }
-        // else {
-        //     this.node.active = false;
-        //     GuideManager.instance.guideContinue();
-        // }
-
-        const data = GuideManager.instance.guideAction.getData<IDialogAction>();
-        const actorAction = data.actorAction;
-        if (actorAction === ActorAction.DIALOG) {
-            if (this._charIndex === this._descript.length) {
-                // this.node.active = false;
+        if (this._actorAction === ActorAction.DIALOG) {
+            if (this._tempStrArr.length === 0) {
                 GuideManager.instance.guideContinue();
             }
         }
@@ -130,24 +116,22 @@ export  class GuideDialogue extends Component {
 
     execGuide() {
         this.log(this.execGuide, "开始执行对话引导！");
-        this._charIndex = 0;
-        this._timeout   = 0;
-        this.node.active = true;
-        this.tip.active  = false;
-        this._descript   = GuideManager.instance.guideAction.descript;
-        const data = GuideManager.instance.guideAction.getData<IDialogAction>();
-        const roleId = data.roleId;
-        const actorAction = data.actorAction;
-        if (actorAction === ActorAction.DIALOG) {
+        this._timeout     = 0;
+        this.tip.active   = false;
+        const data        = GuideManager.instance.guideAction.getData<IDialogAction>();
+        this._descript    = data.descript;
+        const roleId      = data.roleId;
+        this._actorAction = data.actorAction;
+        if (this._actorAction === ActorAction.DIALOG) {
             //演员对话
-            this.actorDialog(roleId);
+            this.actorDialog(data);
         }
         else {
-            if (actorAction === ActorAction.INTO) {
+            if (this._actorAction === ActorAction.INTO) {
                 //演员进场
                 this.actorInto(data);
             }
-            else if (actorAction === ActorAction.OUT) {
+            else if (this._actorAction === ActorAction.OUT) {
                 //演员退场
                 this.actorOut(data);
             }
@@ -189,17 +173,35 @@ export  class GuideDialogue extends Component {
         });
     }
 
-    private actorDialog(roleId: string) {
+    private actorDialog(data: IDialogAction) {
+        const roleId = data.roleId;
         if (!this._roleMap.has(roleId)) {
             this.error(this.execGuide, "没有创建演员，请在对话引导前先增加演员入场行为！");
         }
         else {
+            const sourceType = data.sourceType;
             this._playText = true;
             const role = this._roleMap.get(roleId);
             role.getChildByName("textNode").active = true;
             const text = find("textNode/text", role);
-            this._currentText = text.getComponent(Label);
+            this._currentText = text.getComponent(RichText);
             this._currentText.string = "";
+            curText(this._descript, this._tempStrArr);
+            const animatName = data.animatName;
+            if (sourceType === SourceType.SPINE) {
+                if (animatName.length > 0) {
+                    this._tweenAnimat.target(role).spine({name: animatName}).play().catch(err => {
+                        this.error(this.actorDialog, err);
+                    });
+                }
+            }
+            else if (sourceType === SourceType.DRAGON_BONES) {
+                if (animatName.length > 0) {
+                    this._tweenAnimat.target(role).db({name: animatName}).play().catch(err => {
+                        this.error(this.actorDialog, err);
+                    });
+                }
+            }
         }
     }
 
@@ -212,11 +214,20 @@ export  class GuideDialogue extends Component {
         switch(actorMoveModel) {
             case ActorMoveModel.MOVE:
                 //角色移动的方式离场
-                this.actorMove(roleNode, data.startPosition.x, data.startPosition.y, data.duration, data.easing);
+                this.actorMove(roleNode, data.position.x, data.position.y, data.duration, data.easing).then(() => {
+                    this.node.removeChild(roleNode);
+                    this._roleMap.delete(roleId);
+                    roleNode.destroy();
+                    this.node.active = false;
+                });
                 break;
             case ActorMoveModel.FADE_OUT:
                 //演员以淡入的方式离场
-                this.actorFadeOut(roleNode, data.duration, data.easing);
+                this.actorFadeOut(roleNode, data.duration, data.easing).then(() => {
+                    this.node.removeChild(roleNode);
+                    this._roleMap.delete(roleId);
+                    roleNode.destroy();
+                });
                 break;
             default: 
                 break;
@@ -224,30 +235,25 @@ export  class GuideDialogue extends Component {
     }
 
     private loadRoleAsset(roleNode: Node, data: IDialogAction) {
-        return new Promise<null>((resolve, reject) => {
-            if (data.sourceType === SourceType.IMAGE) {
-                try {
-                    if (!roleNode.getComponent(Sprite)) {
-                        roleNode.addComponent(Sprite);
-                    }
-                    const loader = Res.getLoader(GuideManager.instance.bundble);
-                    loader.load(data.source, SpriteFrame, (err, asset) => {
-                        if (err) {
-                            reject(err);
-                        }
-                        else {
-                            loader.setSpriteFrame(roleNode, data.source);
-                            resolve(null);
-                        }
-                    });
-                    
-                } catch (error) {
-                    reject(error);
+        return new Promise<boolean>((resolve, reject) => {
+            const sourceType = data.sourceType;
+            if (sourceType === SourceType.IMAGE) {
+                if (!roleNode.getComponent(Sprite)) {
+                    roleNode.addComponent(Sprite);
                 }
+                const loader = Res.getLoader(GuideManager.instance.bundble);
+                const source = data.source.replace(new RegExp(".png"), "").replace(new RegExp(".jpg"), "");
+                loader.setSpriteFrame(roleNode, source).then(flag => {
+                    resolve(flag);
+                }).catch(err => {
+                    reject(err);
+                });
             }
-            else if (data.sourceType === SourceType.SPINE) {
+            else if (sourceType === SourceType.SPINE) {
                 if (!roleNode.getComponent(sp.Skeleton)) {
-                    roleNode.addComponent(sp.Skeleton);
+                    const skeleton = roleNode.addComponent(sp.Skeleton);
+                    skeleton.loop = false;
+                    skeleton.premultipliedAlpha = false;
                 }
                 if (!this._tweenAnimat) {
                     this._tweenAnimat = tweenAnimat(roleNode, GuideManager.instance.bundble);
@@ -255,29 +261,50 @@ export  class GuideDialogue extends Component {
                 else {
                     this._tweenAnimat.target(roleNode);
                 }
+                const source = data.source.replace(new RegExp(".json"), "");
                 this._tweenAnimat.spine({
-                    name: data.name,
-                    url: data.source
+                    name: data.animatName,
+                    url: source
+                }).onStop(() => {
+                    resolve(true);
                 }).play().catch(err => {
                     reject(err);
+                });
+            }
+            else if (sourceType === SourceType.DRAGON_BONES) {
+                if (!roleNode.getComponent(dragonBones.ArmatureDisplay)) {
+                    roleNode.addComponent(dragonBones.ArmatureDisplay);
+                }
+                if (!this._tweenAnimat) {
+                    this._tweenAnimat = tweenAnimat(roleNode, GuideManager.instance.bundble);
+                }
+                else {
+                    this._tweenAnimat.target(roleNode);
+                }
+                const source = data.source.replace(new RegExp(".json"), "");
+                this._tweenAnimat.db({
+                    name: data.animatName,
+                    url: source
                 }).onStop(() => {
-                    resolve(null);
+                    resolve(true);
+                }).play().catch(err => {
+                    reject(err);
                 });
             }
         });
     }
 
     private actorMove(actor: Node, x: number, y: number, duration: number, easingType: TweenEasing) {
-        if (TweenEasingType.indexOf(easingType) > -1) {
-            tween(actor).to(duration, {position: _vec3Temp.set(x, y)}, {easing: easingType}).call(() => {
+        return new Promise(resolve => {
+            let easingObj: {easing: TweenEasing};
+            if (TweenEasingType.indexOf(easingType) > -1) {
+                easingObj = {easing: easingType};
+            }
+            tween(actor).to(duration, {position: _vec3Temp.set(x, y)}, easingObj).call(() => {
+                resolve(true);
                 GuideManager.instance.guideContinue();
             }).start();
-        }
-        else {
-            tween(actor).to(duration, {position: _vec3Temp.set(x, y)}).call(() => {
-                GuideManager.instance.guideContinue();
-            }).start();
-        }
+        });
     }
 
     private actorFadeIn(actor: Node, duration: number, easingType: TweenEasing) {
@@ -289,30 +316,28 @@ export  class GuideDialogue extends Component {
             uiOpacity = actor.getComponent(UIOpacity);
         }
         uiOpacity.opacity = 0;
+        let easingObj: {easing: TweenEasing};
         if (TweenEasingType.indexOf(easingType) > -1) {
-            tween(uiOpacity).to(duration, {opacity: 255}, {easing: easingType}).call(() => {
-                GuideManager.instance.guideContinue();
-            }).start();
+            easingObj = {easing: easingType};
         }
-        else {
-            tween(uiOpacity).to(duration, {opacity: 255}).call(() => {
-                GuideManager.instance.guideContinue();
-            }).start();
-        }
+        tween(uiOpacity).to(duration, {opacity: 255}, easingObj).call(() => {
+            GuideManager.instance.guideContinue();
+        }).start();
     }
 
     private actorFadeOut(actor: Node, duration: number, easingType: TweenEasing) {
-        const uiOpacity = actor.getComponent(UIOpacity);
-        if (TweenEasingType.indexOf(easingType) > -1) {
-            tween(uiOpacity).to(duration, {opacity: 0}, {easing: easingType}).call(() => {
+        return new Promise(resolve => {
+            const uiOpacity = actor.getComponent(UIOpacity);
+            let easingObj: {easing: TweenEasing};
+            if (TweenEasingType.indexOf(easingType) > -1) {
+                easingObj = {easing: easingType};
+            }
+            tween(uiOpacity).to(duration, {opacity: 0}, easingObj).call(() => {
+                resolve(true);
+                this.node.active = false;
                 GuideManager.instance.guideContinue();
             }).start();
-        }
-        else {
-            tween(uiOpacity).to(duration, {opacity: 0}).call(() => {
-                GuideManager.instance.guideContinue();
-            }).start();
-        }
+        });
     }
 
     start () {
@@ -332,8 +357,8 @@ export  class GuideDialogue extends Component {
             this._timeout += dt;
             if (this._timeout >= this.duration) {
                 this._timeout = 0;
-                this._currentText.string += this._descript[this._charIndex++];
-                if (this._charIndex >= this._descript.length) {
+                this._currentText.string = this._tempStrArr.pop();
+                if (this._tempStrArr.length === 0) {
                     this._playText = false;
                     this.tip.active = true;
                 }

@@ -1,5 +1,5 @@
 import { Button, instantiate, js, Node, Prefab } from "cc";
-import { Constructor, IScene, ISceneManager, IWindowBase } from "../lib.ccspark";
+import { Constructor, IScene, ISceneManager, IWindowBase } from "../lib.zest";
 import { Debug } from "../Debugger";
 import { Assert } from "../exceptions/Assert";
 import { EventSystem } from "../event";

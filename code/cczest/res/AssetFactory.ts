@@ -1,6 +1,6 @@
 import { Debug } from "../Debugger";
 import { SAFE_CALLBACK } from "../Define";
-import { ILoader } from "../lib.ccspark";
+import { ILoader } from "../lib.zest";
 import { Asset, Node, Prefab, resources, Sprite, SpriteAtlas, SpriteFrame } from "cc";
 import { Res } from "./Res";
 import { AssetRegister } from "./AssetRegister";
@@ -295,7 +295,8 @@ class Preview extends AssetFactory {
 
     private getUrls(urls: string[]) {
         const result = [];
-        for (let i: number = 0; i < urls.length; ++i) {
+        const len = urls.length;
+        for (let i: number = 0; i < len; ++i) {
             const temp: string[] = urls[i].split('/');
             temp.pop();
             const url = temp.join('/');

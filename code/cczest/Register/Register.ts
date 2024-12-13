@@ -1,5 +1,5 @@
 import { EventSystem } from "../event";
-import { IHandler, IRegister } from "../lib.ccspark";
+import { IHandler, IRegister } from "../lib.zest";
 
 export class Register implements IRegister {
     private _commands: string[];

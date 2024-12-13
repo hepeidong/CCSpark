@@ -2,7 +2,7 @@ import { CCGameLayout } from "./CCGameLayout";
 import { CCGuideWindow } from "./CCGuideWindow";
 import { WindowManager } from "./WindowManager";
 import { CCGameWindow } from "./CCGameWindow";
-import { IWindowBase, IGameLayout } from "../lib.ccspark";
+import { IWindowBase, IGameLayout } from "../lib.zest";
 import { UIType } from "./UIType";
 import { Layers } from "cc";
 
@@ -39,6 +39,13 @@ export namespace ui {
      */
     export class GameWindow<T extends IGameLayout> extends CCGameWindow<T> {}
 
+    /**
+     * 打开触摸特效，默认是打开的，可以通过这个函数控制什么时候可以显示触摸特效，什么时候不显示触摸特效
+     * @param open 
+     */
+    export function openTouchEffect(open: boolean) {
+        WindowManager.instance.openTouchEffect(open);
+    }
 
     /**
      * 设置UI所在的Layer层，如果不设置，则默认为UI_2D

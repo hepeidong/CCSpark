@@ -72,7 +72,7 @@ export  class CCObjectUtil {
             return obj;
         }
 
-        let tempObj;
+        let tempObj: any;
         if (Array.isArray(obj)) {
             tempObj = [];
         }
@@ -83,8 +83,16 @@ export  class CCObjectUtil {
             tempObj = {};
         }
         for (const k in obj) {
-            if (Object.hasOwnProperty(k)) {
-                (tempObj as T)[k] = (typeof obj[k] === 'object' || typeof obj[k] === 'function') ? this.cloneObject(obj[k]) : obj[k];
+            if (typeof obj[k] === 'object') {
+                tempObj[k] = this.cloneObject(obj[k]);
+            }
+            else if (typeof obj[k] === 'function') {
+                if (Object.hasOwnProperty(k)) {
+                    tempObj[k] = this.cloneObject(obj[k]);
+                }
+            }
+            else {
+                tempObj[k] = obj[k];
             }
         }
         return tempObj as T;
@@ -136,19 +144,20 @@ export  class CCObjectUtil {
             let temp = deleteIndexs;
             deleteIndexs = [temp];
         }
+        const listLen = list.length;
         for (let index of deleteIndexs) {
-            if (index >= list.length || index < 0) {
+            if (index >= listLen || index < 0) {
                 throw Debug.error(`需要删除的下标${index}不合理`);
             }
             list[index] = undefined;
         }
-        if (deleteIndexs.length === list.length) {
+        if (deleteIndexs.length === listLen) {
             list.length = 0;
             return;
         }
         let illegetIndexs: number[] = [];
         let rearIndex: number = 0;
-        for (let i: number = deleteIndexs[0]; i < list.length; ++i) {
+        for (let i: number = deleteIndexs[0]; i < listLen; ++i) {
             if (list[i] === undefined) {
                 illegetIndexs.push(i);
             }
@@ -159,8 +168,8 @@ export  class CCObjectUtil {
                 rearIndex++;
             }
         }
-        let len: number = list.length - deleteIndexs.length;
-        for (let i: number = len; i < list.length; ++i) {
+        let len: number = listLen - deleteIndexs.length;
+        for (let i: number = len; i < listLen; ++i) {
             delete list[i];
         }
         list.length = len;
@@ -172,8 +181,9 @@ export  class CCObjectUtil {
      * @param compare 
      */
     public static bubbleSort<T>(list: T[], compare: (a: T, b: T) => number) {
-        for (let i = 0; i < list .length; ++i) {
-            for (let j = i + 1; j < list.length; ++j) {
+        const len = list.length;
+        for (let i = 0; i < len; ++i) {
+            for (let j = i + 1; j < len; ++j) {
                 if (compare(list[i], list[j]) > 0) {
                     let temp = list[i];
                     list[i] = list[j];
@@ -192,7 +202,8 @@ export  class CCObjectUtil {
         const left: number[] = [], right: number[] = [];
         left.push(0);
         right.push(list.length - 1);
-        for (let index = 0; index < left.length; ++index) {
+        const len = left.length;
+        for (let index = 0; index < len; ++index) {
             const start = left[index];
             const len = right[index];
             if (start < len) {
@@ -214,6 +225,27 @@ export  class CCObjectUtil {
                 right.push(i - 1);
                 left.push(i + 1);
                 right.push(len);
+            }
+        }
+    }
+
+    /**
+     * 在数组中指定位置插入元素
+     * @param array 目标数组
+     * @param ele 要插入的元素
+     * @param place 插入的位置
+     * @returns 返回是否插入成功的布尔值
+     */
+    public static insertElement(array: any[], ele: any, place: number) {
+        if (array.length < place) {
+            return false;
+        }
+        const endIndex = array.length - 1;
+        for (let i = endIndex; i >= place; --i) {
+            array[i + 1] = array[i];
+            if (i === place) {
+                array[i] = ele;
+                return true;
             }
         }
     }

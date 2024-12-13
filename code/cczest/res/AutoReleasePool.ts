@@ -1,5 +1,5 @@
 import { Debug } from "../Debugger";
-import { IListener } from "../lib.ccspark";
+import { IListener } from "../lib.zest";
 import { Assert } from "../exceptions/Assert";
 import { Asset } from "cc";
 import { EventSystem } from "../event";

@@ -1,9 +1,9 @@
 import { decorator } from "../decorator/Decorator";
 import { Exception } from "./Exception";
 
-const {ccsclass} = decorator;
+const {zestClass} = decorator;
 
-@ccsclass("FindRedDotException")
+@zestClass("FindRedDotException")
 export class FindRedDotException extends Exception {
     private _redDotNode: any;
     constructor(message: string, redDotNode: any) {

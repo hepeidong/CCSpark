@@ -2,9 +2,9 @@ import { decorator } from "../decorator/Decorator";
 import { Debug } from "../Debugger";
 import { Exception } from "./Exception";
 
-const {ccsclass} = decorator;
+const {zestClass} = decorator;
 
-@ccsclass("LoadSceneException")
+@zestClass("LoadSceneException")
 export class LoadSceneException extends Exception {
     private _err: any;
     constructor(message: string, err: any) {

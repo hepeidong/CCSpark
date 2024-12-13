@@ -3,9 +3,10 @@ import { Assert } from "../exceptions/Assert";
 import { GuideHelper } from "../guide/component/GuideHelper";
 import { WindowBase } from "./WindowBase";
 import { WindowManager } from "./WindowManager";
-import { IGuideWindow } from "../lib.ccspark";
+import { IAssetRegister, IGuideWindow } from "../lib.zest";
 import { Component } from "cc";
 import { UIType } from "./UIType";
+import { JsonAsset } from "cc";
 
 /**
  * author: HePeiDong
@@ -17,6 +18,10 @@ export class CCGuideWindow extends WindowBase<GuideHelper> implements IGuideWind
 
     public closeGuideWindow() {
         WindowManager.instance.delView(this.getViewType(), false);
+    }
+
+    listAssetUrls(assetRegister: IAssetRegister) {
+        assetRegister.addDirPath("json");
     }
 
     onCreate(): UIType {
@@ -45,5 +50,21 @@ export class CCGuideWindow extends WindowBase<GuideHelper> implements IGuideWind
     protected _closeView() {
         this.removeView();
         WindowManager.instance.exitView(this);
+    }
+
+    /**
+     * 获取引导数组
+     * @param group 引导组数据 
+     * @returns 
+     * @example
+     *  this.getGuideAsset(guide.group);
+     */
+    protected getGuideAsset(group: {}) {
+        const data = {};
+        for (const key in group) {
+            const groupName = group[key];
+            data[groupName] = this.getGameAsset(groupName, JsonAsset).json;
+        }
+        return data;
     }
 }

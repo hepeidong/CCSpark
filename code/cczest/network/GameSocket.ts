@@ -1,4 +1,4 @@
-import { cc_zest_socket_protocol, IResponseSocketData, ISocketClient } from "../lib.ccspark";
+import { cc_zest_socket_protocol, IResponseSocketData, ISocketClient } from "../lib.zest";
 import { utils } from "../utils";
 
 /**

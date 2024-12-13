@@ -1,9 +1,9 @@
 import { decorator } from "../decorator/Decorator";
 import { Exception } from "./Exception";
 
-const {ccsclass} = decorator;
+const {zestClass} = decorator;
 
-@ccsclass("InitViewTypeException")
+@zestClass("InitViewTypeException")
 export class InitViewTypeException extends Exception {
     private _type: any;
     constructor(message: string, type: any) {

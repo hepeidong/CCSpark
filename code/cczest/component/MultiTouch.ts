@@ -342,7 +342,8 @@ export  class MultiTouch extends Component {
         for (let e of origGrNums) {
             let indexs: number[] = [];
             let flag: boolean = false;
-            for (let i: number = 0; i < this.ballList.length; ++i) {
+            const len = this.ballList.length;
+            for (let i: number = 0; i < len; ++i) {
                 if (e === this.ballList[i].origGrNum) {
                     origBalls.push(this.ballList[i]);
                     flag = true;

@@ -1,6 +1,6 @@
 import { Node } from "cc";
 import { EventSystem } from "../event";
-import { IRedDotChange, RedDotChange } from "../lib.ccspark";
+import { IRedDotChange, RedDotChange } from "../lib.zest";
 
 interface IRedDot {
     node: Node;

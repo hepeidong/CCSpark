@@ -1,5 +1,5 @@
 import { UITransform, v3, Vec3 } from "cc";
-import { IWindowBase } from "../lib.ccspark";
+import { IWindowBase } from "../lib.zest";
 import { Debug } from "../Debugger";
 import { Assert } from "../exceptions/Assert";
 import { LayerManager } from "./LayerManager";

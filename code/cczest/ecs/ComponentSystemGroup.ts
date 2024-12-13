@@ -12,23 +12,23 @@
 import { decorator } from "../decorator/Decorator";
 import { CCSystemGroup } from "./SystemGroup";
 
-const {ccsclass} = decorator;
+const {zestClass} = decorator;
 
-@ccsclass('InitializationSystemGroup')
+@zestClass('InitializationSystemGroup')
 export class InitializationSystemGroup extends CCSystemGroup {
     constructor() {
         super();
     }
 }
 
-@ccsclass('SimulationSystemGroup')
+@zestClass('SimulationSystemGroup')
 export class SimulationSystemGroup extends CCSystemGroup {
     constructor() {
         super();
     }
 }
 
-@ccsclass('PresentationSystemGroup')
+@zestClass('PresentationSystemGroup')
 export class PresentationSystemGroup extends CCSystemGroup {
     constructor() {
         super();

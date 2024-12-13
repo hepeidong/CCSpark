@@ -2,7 +2,7 @@ import { FrameAnimat } from "./FrameAnimat";
 import { SpineAnimat } from "./SpineAnimat";
 import { DragonBonesAnimat } from "./DragonBonesAnimat";
 import { Animation, dragonBones, Node, sp, resources } from "cc";
-import { AnimatPlayStatus, IDragonBonesAnimat, IFrameAnimat, ISpineAnimat, ITweenAnimat } from "../lib.ccspark";
+import { AnimatPlayStatus, IDragonBonesAnimat, IFrameAnimat, ISpineAnimat, ITweenAnimat } from "../lib.zest";
 import { SAFE_CALLBACK } from "../Define";
 
 
@@ -319,7 +319,7 @@ export class TweenAnimat implements ITweenAnimat {
      * 把要播放的dragonBones骨骼动画压入队列中，等待播放
      * @param props 骨骼动画属性
      */
-    public dragonBones(props: IDragonBonesAnimat): TweenAnimat {
+    public db(props: IDragonBonesAnimat): TweenAnimat {
         try {
             if (this._status === "pending") {
                 this._animators.push(AnimatType.DRAGON_BONES);
@@ -339,7 +339,7 @@ export class TweenAnimat implements ITweenAnimat {
             }
             else if (this._status === "resolved") {
                 this._dragonBonesAnimat.reset();
-                this.dragonBones(props);
+                this.db(props);
             }
         } catch (error) {
             this._status = "rejected";
@@ -472,5 +472,5 @@ export class TweenAnimat implements ITweenAnimat {
      * @returns 
      */
 export function tweenAnimat(target: Node, bundle: string = resources.name) {
-    return TweenAnimat.create(bundle).target(target);
+    return TweenAnimat.create(bundle).target(target) as ITweenAnimat;
 }

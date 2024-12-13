@@ -172,7 +172,8 @@ export default class ListItem extends Component {
             twe.call(() => {
                 if (del) {
                     t.list._delSingleItem(t.node);
-                    for (let n: number = t.list.displayData.length - 1; n >= 0; n--) {
+                    const len = t.list.displayData.length;
+                    for (let n: number = len - 1; n >= 0; n--) {
                         if (t.list.displayData[n].id == t.listId) {
                             t.list.displayData.splice(n, 1);
                             break;

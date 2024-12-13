@@ -4,7 +4,7 @@ import { Mediator } from "../puremvc";
 import { Register } from "../Register/Register";
 import { utils, UUID } from "../utils";
 import { Assert } from "../exceptions/Assert";
-import { IBaseLayout, ILoader, IRegister, IScene, ISceneManager } from "../lib.ccspark";
+import { IBaseLayout, ILoader, IRegister, IScene, ISceneManager } from "../lib.zest";
 import { director, ISchedulable, Node, resources, Scene, Scheduler } from "cc";
 import { Res } from "../res/Res";
 import { SceneEvent, GameSceneType } from "./AppEnum";

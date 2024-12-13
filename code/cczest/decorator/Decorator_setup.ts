@@ -19,7 +19,7 @@ const value = (() => {
     };
 })();
 
-export function setup (tag: string) {
+function setup (tag: string) {
     return function (id: any, constructor: Function) {
         if (!constructor.prototype.hasOwnProperty(tag)) {
            value(constructor.prototype, tag, id);

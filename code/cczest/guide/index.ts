@@ -1,4 +1,5 @@
-import { IGuideManager } from "../lib.ccspark";
+import { IGuideManager } from "../lib.zest";
+import { Group } from "./GroupEnum";
 import { EventType } from "./GuideEnum";
 import { GuideManager } from "./GuideManager";
 
@@ -8,6 +9,8 @@ export class guide {
     public static get manager(): IGuideManager {
         return GuideManager.instance;
     }
+
+    public static get group() { return Group; }
 }
 
 export namespace guide {

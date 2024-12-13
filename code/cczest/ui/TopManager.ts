@@ -1,4 +1,4 @@
-import { IWindowBase } from "../lib.ccspark";
+import { IWindowBase } from "../lib.zest";
 import { Debug } from "../Debugger";
 import { LayerManager } from "./LayerManager";
 import { WindowLayer } from "./WindowLayer";

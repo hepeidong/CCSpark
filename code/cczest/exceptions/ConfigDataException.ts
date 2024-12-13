@@ -1,9 +1,9 @@
 import { decorator } from "../decorator/Decorator";
 import { Exception } from "./Exception";
 
-const {ccsclass} = decorator;
+const {zestClass} = decorator;
 
-@ccsclass("ConfigDataException")
+@zestClass("ConfigDataException")
 export class ConfigDataException extends Exception {
     private _flag: boolean;
     constructor(_message: string, flag: boolean) {

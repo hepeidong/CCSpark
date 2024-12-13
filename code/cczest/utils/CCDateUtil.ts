@@ -1,4 +1,4 @@
-import { cc_zest_utils_date_compare_type } from "../lib.ccspark";
+import { cc_zest_utils_date_compare_type } from "../lib.zest";
 import { CCStringUtil } from "./CCStringUtil";
 
 interface DateFormatArgs {

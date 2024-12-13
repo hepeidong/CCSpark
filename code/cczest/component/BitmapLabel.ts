@@ -1,5 +1,5 @@
 import { CCString, Component, Enum, error, log, Node, Sprite, SpriteFrame, UITransform, _decorator, __private } from "cc";
-import { cc_zest_bitLblImage_type } from "../lib.ccspark";
+import { cc_zest_bitLblImage_type } from "../lib.zest";
 import { SAFE_CALLBACK } from "../Define";
 import { utils } from "../utils";
 import { LabelRemove } from "./LabelRemove";
@@ -335,7 +335,8 @@ export  class BitmapLabel extends Component {
         if (!this._texture) return;
 
         let imageList: cc_zest_bitLblImage_type[] = [];
-        for (let i: number = 0; i < str.length; ++i) {
+        const len = str.length;
+        for (let i: number = 0; i < len; ++i) {
             let e = str[i];
             let newSF: SpriteFrame = new SpriteFrame();
             newSF.texture = this._texture;
@@ -409,7 +410,8 @@ export  class BitmapLabel extends Component {
         this.removeChild();
         this._currLabel = this.string;
         const nodeUI = this.node.getComponent(UITransform);
-        for (let i: number = 0; i < imageList.length; ++i) {
+        const len = imageList.length;
+        for (let i: number = 0; i < len; ++i) {
             if (!this._labelNode.children[i]) {
                 let newNode: Node = new Node(this.string[i]);
                 newNode.addComponent(Sprite);
@@ -491,8 +493,10 @@ export  class BitmapLabel extends Component {
                 }
                 else {
                     let charIdx: number = 0;
-                    for (let i: number = 0; i < this._currLabel.length; ++i) {
-                        for (let e of this.string) {
+                    const len = this._currLabel.length;
+                    const str = this.string;
+                    for (let i: number = 0; i < len; ++i) {
+                        for (let e of str) {
                             if (e === this._currLabel[i]) {
                                 charIdx = i;
                                 break;
@@ -507,9 +511,9 @@ export  class BitmapLabel extends Component {
                     this._labelNode.removeAllChildren();
                 }
                 else {
-                    let childrenLen: number = this._labelNode.children.length;
-                    let index: number = this.string.length;
-                    let removeChildren: Node[] = [];
+                    const childrenLen: number = this._labelNode.children.length;
+                    const index: number = this.string.length;
+                    const removeChildren: Node[] = [];
                     for (let i: number = index; i < childrenLen; ++i) {
                         let child: Node = this._labelNode.children[i];
                         removeChildren.push(child);

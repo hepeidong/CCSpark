@@ -5,7 +5,7 @@ import { MacroCommand } from "../puremvc";
 import { SimpleCommand } from "../puremvc";
 import { CCDocument } from "./CCDocument";
 import { Assert } from "../exceptions/Assert";
-import { Constructor, IAdapterManager, IBaseLayout, IDocument, IEventBody } from "../lib.ccspark";
+import { Constructor, IAdapterManager, IBaseLayout, IDocument, IEventBody } from "../lib.zest";
 import { js } from "cc";
 import { GamePlatform, GameSceneType } from "./AppEnum";
 import { CCBaseLayout } from "./CCBaseLayout";
@@ -24,7 +24,7 @@ export class app {
      * @param proxyName 
      * @returns 
      */
-    public static getModel<T extends IDocument>(proxyName: string, _type?: T): T {
+    public static getModel<T extends IDocument>(proxyName: string, _type?: new() => T): T {
         if (this.game.hasProxy(proxyName)) {
             return this.game.retrieveProxy(proxyName) as T;
         }
@@ -133,7 +133,7 @@ export namespace app {
         NONE = GameSceneType.NONE,
         /**普通场景 */
         Normal = GameSceneType.Normal,
-        /**过渡阶段的场景（一般类似用于加载资源的场景） */
+        /**过渡阶段的场景（一般类似用于加载资源的场景，这类场景切换时，场景内所加载的资源，包括打开过的UI都不会被释放） */
         Interim = GameSceneType.Interim
     }
     /**游戏平台类型 */

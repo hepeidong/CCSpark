@@ -1,9 +1,9 @@
 import { decorator } from "../decorator/Decorator";
 import { Exception } from "./Exception";
 
-const {ccsclass} = decorator;
+const {zestClass} = decorator;
 
-@ccsclass("AudioSourceIDException")
+@zestClass("AudioSourceIDException")
 export class AudioSourceIDException extends Exception {
     private _flag: boolean;
     constructor(message: string, flag: boolean) {

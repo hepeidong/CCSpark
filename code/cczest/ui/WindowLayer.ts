@@ -1,5 +1,5 @@
 import { Layers, Node, Size, size, UITransform } from "cc";
-import { IWindowBase } from "../lib.ccspark";
+import { IWindowBase } from "../lib.zest";
 import { MAX_PRIORITY } from "../Define";
 import { app } from "../app";
 import { setPriority } from "../util";

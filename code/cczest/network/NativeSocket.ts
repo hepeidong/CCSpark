@@ -3,9 +3,9 @@ import { Debug } from "../Debugger";
 import { SAFE_CALLBACK } from "../Define";
 import { Assert } from "../exceptions/Assert";
 import { GameSocket } from "./GameSocket";
-import { cc_zest_socket_protocol } from "../lib.ccspark";
+import { cc_zest_socket_protocol } from "../lib.zest";
 
-const {ccsclass} = decorator;
+const {zestClass} = decorator;
 
 /**
  * author: 何沛东
@@ -13,7 +13,7 @@ const {ccsclass} = decorator;
  * name: 浏览器平台socket代理类
  * description: 原生socket，这个类可以用于原生平台，浏览器等等平台网络连接
  */
-@ccsclass("NativeSocket")
+@zestClass("NativeSocket")
 export class NativeSocket extends GameSocket<WebSocket> {
     constructor() {
         super('NativeSocket');

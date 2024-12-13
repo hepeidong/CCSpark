@@ -1,8 +1,8 @@
 import { decorator } from "../decorator";
-import { ISocket_extend, ISocketProtocol } from "../lib.ccspark";
+import { ISocket_extend, ISocketProtocol } from "../lib.zest";
 import { ProtocolType } from "./SocketEnum";
 
-const {ccsclass} = decorator;
+const {zestClass} = decorator;
 
 /**
  * author: 何沛东
@@ -10,7 +10,7 @@ const {ccsclass} = decorator;
  * name: 游戏socket字符串数据协议类
  * description: 构建游戏中socket发送数据的字符串数据
  */
-@ccsclass(ProtocolType.JSON)
+@zestClass(ProtocolType.JSON)
 export class JsonProtocol implements ISocketProtocol {
     private _socket: ISocket_extend;
     constructor(socket: ISocket_extend) {

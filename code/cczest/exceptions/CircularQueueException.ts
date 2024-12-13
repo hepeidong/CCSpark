@@ -1,8 +1,8 @@
 import { decorator } from "../decorator/Decorator";
 import { Exception } from "./Exception";
-const {ccsclass} = decorator;
+const {zestClass} = decorator;
 
-@ccsclass("CircularQueueException")
+@zestClass("CircularQueueException")
 export class CircularQueueException extends Exception {
     private _flag: boolean;
     constructor(message: string, flag: boolean) {

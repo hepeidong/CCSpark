@@ -1,6 +1,5 @@
 import { assetManager, Component, Sprite, SpriteFrame, Texture2D, _decorator } from "cc";
-import { ILoader } from "../lib.ccspark";
-import { Debug } from "../Debugger";
+import { ILoader } from "../lib.zest";
 import { Assert } from "../exceptions/Assert";
 
 const {ccclass} = _decorator;
@@ -15,34 +14,42 @@ export class AutoRelease extends Component {
 
 
     public source(url: string, loader: ILoader) {
-        if (url.indexOf('http://') > -1 || url.indexOf('https://') > -1) {
-            assetManager.loadRemote<Texture2D>(url, (err, texture) => {
-                if (err) {
-                    Debug.error('资源加载错误', err);
-                    return;
-                }
-                if (Assert.handle(Assert.Type.LoadRemoteTextureException, texture, url)) {
-                    const spriteFrame = new SpriteFrame();
-                    spriteFrame.texture = texture;
-                    this.setSpriteFrame(spriteFrame, loader);
-                }
-            });
-        }
-        else {
-            const spriteFrame = loader.get<SpriteFrame>(url, SpriteFrame);
-            if (!spriteFrame) {
-                loader.load(url, SpriteFrame, (err, asset) => {
+        return new Promise<boolean>((resolve, reject) => {
+            if (url.indexOf('http://') > -1 || url.indexOf('https://') > -1) {
+                assetManager.loadRemote<Texture2D>(url, (err, texture) => {
                     if (err) {
-                        Debug.error('资源加载错误', err);
+                        reject(`资源加载错误：${err}`);
                         return;
                     }
-                    this.setSpriteFrame(asset as SpriteFrame, loader);
+                    if (Assert.handle(Assert.Type.LoadRemoteTextureException, texture, url)) {
+                        const spriteFrame = new SpriteFrame();
+                        spriteFrame.texture = texture;
+                        this.setSpriteFrame(spriteFrame, loader);
+                        resolve(true);
+                    }
+                    else {
+                        resolve(false);
+                    }
                 });
             }
             else {
-                this.setSpriteFrame(spriteFrame, loader);
+                const spriteFrame = loader.get<SpriteFrame>(url, SpriteFrame);
+                if (!spriteFrame) {
+                    loader.load(url, SpriteFrame, (err, asset) => {
+                        if (err) {
+                            reject(`资源加载错误：${err}`);
+                            return;
+                        }
+                        this.setSpriteFrame(asset as SpriteFrame, loader);
+                        resolve(true);
+                    });
+                }
+                else {
+                    this.setSpriteFrame(spriteFrame, loader);
+                    resolve(true);
+                }
             }
-        }
+        });
     }
 
     private setSpriteFrame(asset: SpriteFrame, loader: ILoader) {
@@ -54,7 +61,6 @@ export class AutoRelease extends Component {
                     oldAsset.decRef();
                 }
             }
-            
             sprite.spriteFrame = null;
             sprite.spriteFrame = asset;
             this._spriteFrame = asset;

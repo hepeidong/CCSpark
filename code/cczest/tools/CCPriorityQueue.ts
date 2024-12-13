@@ -89,7 +89,8 @@ export class CCPriorityQueue<T> {
      * @param callback 如果返回false结束遍历；如果返回true或者没有返回值，则继续遍历，直到队列被遍历完
      */
     public forEach(callback: (value: T, index: number, queue: this) => boolean|void) {
-        for (let i = 0; i < this.length; ++i) {
+        const len = this.length;
+        for (let i = 0; i < len; ++i) {
             const node: HeapNode<T> = this[i];
             const flag = callback(node.value, i, this);
             if (typeof flag === "boolean") {
@@ -118,7 +119,8 @@ export class CCPriorityQueue<T> {
             delete this[this._length--];
             return ele;
         }
-        for (let i: number = index; i < this.length - 1; ++i) {
+        const len = this.length;
+        for (let i: number = index; i < len - 1; ++i) {
             this[i] = this[i + 1];
         }
         delete this[--this._length];
@@ -126,7 +128,8 @@ export class CCPriorityQueue<T> {
     }
 
     public remove(e: T) {
-        for (let i = 0; i < this.length; ++i) {
+        const len = this.length;
+        for (let i = 0; i < len; ++i) {
             const node: HeapNode<T> = this[i];
             if (node.value === e) {
                 this.delete(i);
@@ -137,7 +140,8 @@ export class CCPriorityQueue<T> {
     }
 
     public clear(): void {
-        for (let i: number = 0; i < this.length; ++i) {
+        const len = this.length;
+        for (let i: number = 0; i < len; ++i) {
             delete this[i];
         }
         this._length = 0;

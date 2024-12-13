@@ -1,5 +1,5 @@
 import { setParentType } from "../decorator/Decorator";
-import { IRedDotAction } from "../lib.ccspark";
+import { IRedDotAction } from "../lib.zest";
 import { RedDotManager } from "./RedDotManager";
 
 export abstract class CCRedDotAction implements IRedDotAction {

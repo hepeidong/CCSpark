@@ -1,9 +1,9 @@
 import { Debug } from "../Debugger";
 import { decorator } from "../decorator";
-import { ISocket_extend, IResponseSocketData, ISocketData, ISocketProtocol } from "../lib.ccspark";
+import { ISocket_extend, IResponseSocketData, ISocketData, ISocketProtocol } from "../lib.zest";
 import { ProtocolType } from "./SocketEnum";
 
-const {ccsclass} = decorator;
+const {zestClass} = decorator;
 
 /**
  * author: 何沛东
@@ -11,7 +11,7 @@ const {ccsclass} = decorator;
  * name: 游戏socket二进制数据协议类
  * description: 构建游戏中socket发送数据的二进制数据，项目需要依赖msgpack-lite库
  */
-@ccsclass(ProtocolType.ARRAY_BUFFER)
+@zestClass(ProtocolType.ARRAY_BUFFER)
 export class BianryProtocol implements ISocketProtocol {
     private _socket: ISocket_extend;
     // private _encoder: TextEncoder;

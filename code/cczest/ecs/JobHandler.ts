@@ -1,4 +1,4 @@
-import { IJobHandler, ISystem } from "../lib.ccspark";
+import { IJobHandler, ISystem } from "../lib.zest";
 
 export class JobHandler<Method> implements IJobHandler<Method> {
     protected _method: Method;

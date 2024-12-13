@@ -3,9 +3,9 @@ import { decorator } from "../decorator/Decorator";
 import { Debug } from "../Debugger";
 import { SAFE_CALLBACK } from "../Define";
 import { GameSocket } from "./GameSocket";
-import { cc_zest_socket_protocol } from "../lib.ccspark";
+import { cc_zest_socket_protocol } from "../lib.zest";
 
-const {ccsclass} = decorator;
+const {zestClass} = decorator;
 
 /**
  * author: 何沛东
@@ -13,7 +13,7 @@ const {ccsclass} = decorator;
  * name: 字节平台socket代理类
  * description: 负责游戏中的字节平台网络连接
  */
-@ccsclass("TTSocket")
+@zestClass("TTSocket")
 export class TTSocket extends GameSocket<tt.TTSocket> {
     private _event_hide: boolean;
     private _contentType: string;

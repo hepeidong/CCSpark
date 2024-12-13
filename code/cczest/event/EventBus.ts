@@ -1,5 +1,5 @@
 import { js } from "cc";
-import { Constructor, IGameObserver, IGameSubject, IEventBus } from "../lib.ccspark";
+import { Constructor, IGameObserver, IGameSubject, IEventBus } from "../lib.zest";
 import { Debug } from "../Debugger";
 import { Assert } from "../exceptions/Assert";
 import { GameSubject } from "./GameSubject";

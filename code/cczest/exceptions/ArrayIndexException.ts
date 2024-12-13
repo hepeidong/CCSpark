@@ -1,9 +1,9 @@
 import { decorator } from "../decorator/Decorator";
 import { Exception } from "./Exception";
 
-const {ccsclass} = decorator;
+const {zestClass} = decorator;
 
-@ccsclass("ArrayIndexException")
+@zestClass("ArrayIndexException")
 export class ArrayIndexException extends Exception {
     private _condition: boolean;
     constructor(message: string, condition: boolean) {

@@ -1,4 +1,4 @@
-import { IEventListeners, IHandler } from "../lib.ccspark";
+import { IEventListeners, IHandler } from "../lib.zest";
 import { utils } from "../utils";
 
 

@@ -1,7 +1,7 @@
 import { AdapterWidget } from "../app/adapter_manager/component/AdapterWidget";
 import { Debug } from "../Debugger";
 import { SAFE_CALLBACK } from "../Define";
-import { cc_zest_win_model, IAssetRegister, IRegister, IWindowBase } from "../lib.ccspark";
+import { cc_zest_win_model, IAssetRegister, IRegister, IWindowBase } from "../lib.zest";
 import { Mediator } from "../puremvc";
 import { Register } from "../Register/Register";
 import { AssetFactory } from "../res/AssetFactory";

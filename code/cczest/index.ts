@@ -1,4 +1,4 @@
-export * from "./lib.ccspark";
+export * from "./lib.zest";
 export * from "./decorator";
 export * from "./Debugger";
 export * from "./app";

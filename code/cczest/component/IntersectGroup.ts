@@ -46,7 +46,8 @@ export class IntersectGroup extends Intersections {
 
     private checkIntersect() {
         const targetGroup = this.targetGroup.group;
-        for (const helper of this._group) {
+        const group = this._group;
+        for (const helper of group) {
             for (const target of targetGroup) {
                 helper.setTarget(target.node);
                 const isIntersect = helper.getIsIntersect();

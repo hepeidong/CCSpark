@@ -2,7 +2,7 @@ import { _decorator, Component, EventTouch, Node, UITransform, Vec2, Vec3 } from
 import { RockingBar } from './RockingBar';
 import { EDITOR } from 'cc/env';
 import { app } from '../app';
-import { IEventBody } from '../lib.ccspark';
+import { IEventBody } from '../lib.zest';
 const { ccclass, property, executeInEditMode, menu } = _decorator;
 
 const _rockingStartLocation = new Vec2();

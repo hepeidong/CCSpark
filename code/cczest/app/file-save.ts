@@ -2,7 +2,7 @@ import { native, sys } from "cc";
 import { Debug } from "../Debugger";
 import { STARTUP } from "../Define";
 import { Assert } from "../exceptions/Assert";
-import { IDocument } from "../lib.ccspark";
+import { IDocument } from "../lib.zest";
 import { UUID } from "../utils";
 import { CCGameWorld } from "./CCGameWorld";
 
@@ -119,7 +119,8 @@ class DataTable {
     }
 
     public save() {
-        for (const key in this._fileTable) {
+        const fileTable = this._fileTable;
+        for (const key in fileTable) {
             if (CCGameWorld.instance.hasProxy(key)) {
                 const proxy = CCGameWorld.instance.retrieveProxy(key) as IDocument;
                 if (!proxy.save()) {
@@ -147,8 +148,9 @@ class DataTable {
     }
 
     public remove() {
-        for (const key in this._fileTable) {
-            if (!FileIO.remove(this._fileTable[key])) {
+        const fileTable = this._fileTable;
+        for (const key in fileTable) {
+            if (!FileIO.remove(fileTable[key])) {
                 return false;
             }
         }

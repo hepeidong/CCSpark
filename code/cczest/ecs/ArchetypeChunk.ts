@@ -2,7 +2,7 @@ import { Debug } from "../Debugger";
 import { ECS_DEBUG } from "./ECSDef";
 import { EntityArchetype } from "./EntityArchetype";
 import { UUID } from "../utils";
-import { ArchetypeChunkChange, IArchetypeChunk, IArchetypeChunkChange, IEntitiesGroup, IBaseEntity, IEntityArchetype } from "../lib.ccspark";
+import { ArchetypeChunkChange, IArchetypeChunk, IArchetypeChunkChange, IEntitiesGroup, IBaseEntity, IEntityArchetype } from "../lib.zest";
 import { tools } from "../tools";
 import { EventSystem } from "../event";
 import { EntityDoesNotExistException } from "./exceptions/EntityDoesNotExistException";

@@ -93,7 +93,8 @@ export class CCCircularQueue<T>  {
     public removeAt(index: number): boolean {
         let temp: T = this.back(index);
         if (temp) {
-            for (let i: number = index; i + 1 < this.length; ++i) {
+            const len = this.length;
+            for (let i: number = index; i + 1 < len; ++i) {
                 this[i] = this[i + 1];
             }
             delete this[this._rear - 1];
@@ -110,7 +111,8 @@ export class CCCircularQueue<T>  {
      */
     public remove(e: T): boolean {
         let flag: boolean = false;
-        for (let i: number = 0; i < this.length; ++i) {
+        const len = this.length;
+        for (let i: number = 0; i < len; ++i) {
             if (this[i] === e && !flag) {
                 flag = true;
             }
@@ -140,7 +142,8 @@ export class CCCircularQueue<T>  {
      * @param callback 如果返回false结束遍历；如果返回true或者没有返回值，则继续遍历，直到队列被遍历完
      */
     public forEach(callback: (value: T, index: number, queue: this) => boolean|void) {
-        for (let i: number = 0; i < this.length; ++i) {
+        const len = this.length;
+        for (let i: number = 0; i < len; ++i) {
             const flag = callback(this[i], i, this);
             if (typeof flag === "boolean") {
                 if (!flag) return;
@@ -163,7 +166,8 @@ export class CCCircularQueue<T>  {
     }
 
     public clear(): void {
-        for (let i: number = 0; i < this.length; ++i) {
+        const len = this.length;
+        for (let i: number = 0; i < len; ++i) {
             delete this[i];
         }
         this._front = 0;
@@ -171,7 +175,8 @@ export class CCCircularQueue<T>  {
     }
 
     public contains(e: T): boolean {
-        for (let i: number = 0; i < this.length; ++i) {
+        const len = this.length;
+        for (let i: number = 0; i < len; ++i) {
             if (this[i] === e) {
                 return true;
             }

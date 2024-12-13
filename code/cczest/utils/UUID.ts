@@ -15,21 +15,21 @@ const hex = [ // 0-255
     "d0", "d1", "d2", "d3", "d4", "d5", "d6", "d7", "d8", "d9", "da", "db", "dc", "dd", "de", "df",
     "e0", "e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9", "ea", "eb", "ec", "ed", "ee", "ef",
     "f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "fa", "fb", "fc", "fd", "fe", "ff"
-]
+];
 
 export class UUID {
     /**
      * 生成随机UUID, 用于作为对象的唯一标志
      */
     static randomUUID() {
-        const d0 = Math.random() * 0xffffffff | 0
-        const d1 = Math.random() * 0xffffffff | 0
-        const d2 = Math.random() * 0xffffffff | 0
-        const d3 = Math.random() * 0xffffffff | 0
+        const d0 = Math.random() * 0xffffffff | 0;
+        const d1 = Math.random() * 0xffffffff | 0;
+        const d2 = Math.random() * 0xffffffff | 0;
+        const d3 = Math.random() * 0xffffffff | 0;
         return hex[d0 & 0xff] + hex[d0 >> 8 & 0xff] + hex[d0 >> 16 & 0xff] + hex[d0 >> 24 & 0xff] + '-' +
           hex[d1 & 0xff] + hex[d1 >> 8 & 0xff] + '-' + hex[d1 >> 16 & 0x0f | 0x40] + hex[d1 >> 24 & 0xff] + '-' +
           hex[d2 & 0x3f | 0x80] + hex[d2 >> 8 & 0xff] + '-' + hex[d2 >> 16 & 0xff] + hex[d2 >> 24 & 0xff] +
-          hex[d3 & 0xff] + hex[d3 >> 8 & 0xff] + hex[d3 >> 16 & 0xff] + hex[d3 >> 24 & 0xff]
+          hex[d3 & 0xff] + hex[d3 >> 8 & 0xff] + hex[d3 >> 16 & 0xff] + hex[d3 >> 24 & 0xff];
     }
 
     /**这是另一种获取UUID的方式 */

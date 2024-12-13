@@ -307,7 +307,8 @@ export class CCAStar {
      * @param sd 
      */
     private findSurround(sd: StepData) {
-        for (let i: number = 0; i < this._numSurround; ++i) {
+        const num = this._numSurround;
+        for (let i: number = 0; i < num; ++i) {
             let coord: CCASCOORD = new CCASCOORD(sd.coord.x, sd.coord.y);
             coord.setCoord(this._surround[i]);
             if (this.judgeSurround(coord, sd.coord, sd.G + this._gAdd[i])) {
@@ -351,7 +352,8 @@ export class CCAStar {
      * @param coord 
      */
     private findFromList(list: CCCircularQueue<StepData>, coord: CCASCOORD): StepData {
-        for (let i: number = 0; i < list.length; ++i) {
+        const len = list.length;
+        for (let i: number = 0; i < len; ++i) {
             let sd: StepData = list[i];
             if (coord.isEquality(sd.coord)) {
                 return sd;
@@ -382,7 +384,8 @@ export class CCAStar {
      * @param coord 
      */
     private isContain(list: CCCircularQueue<StepData>, coord: CCASCOORD): boolean {
-        for (let i: number = 0; i < list.length; ++i) {
+        const len = list.length;
+        for (let i: number = 0; i < len; ++i) {
             if (coord.isEquality(list[i].coord)) {
                 return true;
             }

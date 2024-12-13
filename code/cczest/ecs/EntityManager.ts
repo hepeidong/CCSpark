@@ -5,7 +5,7 @@ import { EntityAlreadyDestroyedException } from "./exceptions/EntityAlreadyDestr
 import { ECS_DEBUG } from "./ECSDef";
 import { ArchetypeChunk } from "./ArchetypeChunk";
 import { Debug } from "../Debugger";
-import { EntityChange, IBaseEntity, IEntityArchetype, IEntityManager, IEntityChange } from "../lib.ccspark";
+import { EntityChange, IBaseEntity, IEntityArchetype, IEntityManager, IEntityChange } from "../lib.zest";
 import { tools } from "../tools";
 import { EventSystem } from "../event";
 

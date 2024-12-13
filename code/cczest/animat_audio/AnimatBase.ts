@@ -1,6 +1,6 @@
 import { Director, director, Node } from "cc";
 import { SAFE_CALLBACK } from "../Define";
-import { AnimatPlayStatus, cc_zest_animat_resolved_type } from "../lib.ccspark";
+import { AnimatPlayStatus, cc_zest_animat_resolved_type } from "../lib.zest";
 import { AnimatLoad } from "../res/LoadAnimation";
 import { tools } from "../tools";
 

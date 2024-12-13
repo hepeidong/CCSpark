@@ -1,4 +1,4 @@
-import { IListener, ISignal } from "../lib.ccspark";
+import { IListener, ISignal } from "../lib.zest";
 import { tools } from "../tools";
 
 type PriorityListener<T extends IListener> = {
@@ -38,7 +38,8 @@ export class CCSignal<T extends IListener, E> implements ISignal<T, E> {
     public remove(listener: T) {
         if (this._usePriority) {
             const listeners = this._listeners as tools.PriorityQueue<PriorityListener<T>>;
-            for (let i = 0; i < listeners.length; ++i) {
+            const len = listeners.length;
+            for (let i = 0; i < len; ++i) {
                 const e = listeners.back(i);
                 if (e.listener === listener) {
                     listeners.delete(i);

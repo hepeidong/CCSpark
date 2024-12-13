@@ -1,5 +1,5 @@
 import { Component, EventMouse, EventTouch, Node, _decorator, Input } from "cc";
-import { IBaseLayout, IEventBody } from "../lib.ccspark";
+import { IBaseLayout, IEventBody } from "../lib.zest";
 import { CCGameWorld } from "./CCGameWorld";
 
 

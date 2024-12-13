@@ -3,7 +3,7 @@ import { utils } from "../utils";
 import { ECS_DEBUG } from "./ECSDef";
 import { removeElement } from "./ecs-utils";
 import { ArchetypeAlreadyReleasedException } from "./exceptions/ArchetypeAlreadyReleasedException";
-import { GroupChange, IArchetypeChunk, IBaseEntity, IEntityArchetype, IGroupChange } from "../lib.ccspark";
+import { GroupChange, IArchetypeChunk, IBaseEntity, IEntityArchetype, IGroupChange } from "../lib.zest";
 import { EventSystem } from "../event";
 
 

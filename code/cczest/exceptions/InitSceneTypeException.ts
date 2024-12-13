@@ -1,9 +1,9 @@
 import { decorator } from "../decorator/Decorator";
 import { Exception } from "./Exception";
 
-const {ccsclass} = decorator;
+const {zestClass} = decorator;
 
-@ccsclass("InitSceneTypeException")
+@zestClass("InitSceneTypeException")
 export class InitSceneTypeException extends Exception {
     private _type: number;
     constructor(message: string, type: number) {

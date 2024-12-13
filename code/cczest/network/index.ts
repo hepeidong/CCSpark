@@ -1,4 +1,4 @@
-import { IHttpManager, ISocket, ITimeManager } from "../lib.ccspark";
+import { IHttpManager, ISocket, ITimeManager } from "../lib.zest";
 import { Http } from "./Http";
 import { CCHttpMessage } from "./HttpMessage";
 import { Socket } from "./Socket";

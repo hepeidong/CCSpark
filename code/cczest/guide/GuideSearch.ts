@@ -6,6 +6,7 @@ import { Node } from "cc";
 import { setPriority } from "../util";
 import { GuideAction } from "./GuideAction";
 import { utils } from "../utils";
+import { IFingerAction, ITextAction } from "../lib.zest";
 
 type panel_t = {
     target: Node;
@@ -72,17 +73,20 @@ type panel_t = {
      * @param guideId 
      */
     public searchLightTarget(guideId: string) {
-        let uiId: string = this._guideGroup.get(guideId).uiId;
-        let panel = this._guidePanels.get(uiId);
-        if (panel && panel.scope === Scope.ENTIRE_PANEL) {
-            this.addLightTarget(guideId, this._guidePanels.get(uiId).target);
+        let uiId: string = this._guideGroup.get(guideId).getData().uiId;
+        if (this._guidePanels.has(uiId)) {
+            let panel = this._guidePanels.get(uiId);
+            if (panel.scope === Scope.ENTIRE_PANEL) {
+                this.addLightTarget(guideId, this._guidePanels.get(uiId).target);
+            }
+            else {
+                uiId = this._guideGroup.get(guideId).getData().uiId;
+                this.traversalChild(this._guidePanels.get(uiId).target, (target: Node) => {
+                    this.storageLightTarget(guideId, target);
+                });
+            }
         }
-        else {
-            uiId = this._guideGroup.get(guideId).uiId;
-            this.traversalChild(this._guidePanels.get(uiId).target, (target: Node) => {
-                this.storageLightTarget(guideId, target);
-            });
-        }
+        
     }
 
     public addGuideTarget(target: GuideTarget) {
@@ -124,8 +128,10 @@ type panel_t = {
     }
 
     private traversalChild(parent: Node, callback: (target: Node) => void) {
-        for (let i: number = 0; i < parent.children.length; ++i) {
-            const child = parent.children[i];
+        const children = parent.children;
+        const len = children.length;
+        for (let i: number = 0; i < len; ++i) {
+            const child = children[i];
             //设置节点层级,以便引导完之后恢复节点原本的层级            
             const zIndex = i;
             setPriority(child, zIndex);
@@ -146,14 +152,16 @@ type panel_t = {
         for (let key of keysItertor) {
             //检索并存储引导目标
             const guideAction = this._guideGroup.get(key);
-            if (guideAction.targetId.indexOf(targetID.ID) > -1) {
-                flag = true;
-                if (!guideTargets) {
-                    guideTargets = new GuideTarget();
+            if (Array.isArray(guideAction.getData().targetId)) {
+                if (guideAction.getData().targetId.indexOf(targetID.ID) > -1) {
+                    flag = true;
+                    if (!guideTargets) {
+                        guideTargets = new GuideTarget();
+                    }
+                    guideTargets.target = target;
+                    guideTargets.guideIds.push(guideAction.guideId);
+                    guideTargets.init();
                 }
-                guideTargets.target = target;
-                guideTargets.guideIds.push(guideAction.guideId);
-                guideTargets.init();
             }
         }
         if (flag) {
@@ -166,8 +174,9 @@ type panel_t = {
         if (!targetID) {
             return;
         }
-        for (let e of this._guideGroup.get(guideId).targetId) {
-            if (e === targetID.ID) {
+        const targetId = this._guideGroup.get(guideId).getData<IFingerAction|ITextAction>().targetId;
+        for (const id of targetId) {
+            if (id === targetID.ID) {
                 this.addLightTarget(guideId, target);
                 break;
             }

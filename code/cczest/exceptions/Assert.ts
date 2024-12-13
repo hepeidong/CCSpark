@@ -1,5 +1,5 @@
 import { js } from "cc";
-import { Constructor } from "../lib.ccspark";
+import { Constructor } from "../lib.zest";
 import { Debug } from "../Debugger";
 import { Exception } from "./Exception";
 

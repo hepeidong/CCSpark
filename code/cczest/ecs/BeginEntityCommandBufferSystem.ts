@@ -1,4 +1,4 @@
-import { IBaseEntity, IBeginEntityCommandBufferSystem, IConversionSystem, ISystem, JobInitMethod } from "../lib.ccspark";
+import { IBaseEntity, IBeginEntityCommandBufferSystem, IConversionSystem, ISystem, JobInitMethod } from "../lib.zest";
 import { EntityCommandBufferSystem } from "./EntityCommandBufferSystem";
 import { JobHandler } from "./JobHandler";
 import { JobInitHandler } from "./JobInitHandler";

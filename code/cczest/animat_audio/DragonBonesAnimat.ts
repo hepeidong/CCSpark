@@ -1,5 +1,5 @@
 import { dragonBones, Node } from "cc";
-import { cc_zest_animat_dragonBonesAnimat_type, cc_zest_animat_resolved_type, cc_zest_animat_spineAnimat_type, IDragonBonesAnimat } from "../lib.ccspark";
+import { cc_zest_animat_dragonBonesAnimat_type, cc_zest_animat_resolved_type, cc_zest_animat_spineAnimat_type, IDragonBonesAnimat } from "../lib.zest";
 import { Debug } from "../Debugger";
 import { SAFE_CALLBACK } from "../Define";
 import { DBLoad } from "../res/LoadAnimation";
@@ -102,9 +102,18 @@ export  class DragonBonesAnimat extends AnimatBase<cc_zest_animat_dragonBonesAni
         try {
             if (this._status === 'pending') {
                 const animat = this._animatList.back(this.index);
-                let props: IDragonBonesAnimat = animat.props;
+                const props: IDragonBonesAnimat = animat.props;
                 if (!props.played) {
-                    this.playInterval();
+                    this.registerEvent();
+                    const delay = props.delay
+                    if (delay > 0) {
+                        tools.Timer.setTimeout(() => {
+                            this._selfDB.playAnimation(props.name, props.repeatCount);
+                        }, delay);
+                    }
+                    else {
+                        this._selfDB.playAnimation(props.name, props.repeatCount);
+                    }
                 }
             }
         } catch (error) {
@@ -157,18 +166,7 @@ export  class DragonBonesAnimat extends AnimatBase<cc_zest_animat_dragonBonesAni
     }
 
     private playInterval() {
-        this.registerEvent();
-        const animat = this._animatList.back(this.index);
-        const props: IDragonBonesAnimat = animat.props;
-        const delay = props.delay
-        if (delay > 0) {
-            tools.Timer.setInterval(() => {
-                this._selfDB.playAnimation(props.name, props.repeatCount);
-            }, delay);
-        }
-        else {
-            this._selfDB.playAnimation(props.name, props.repeatCount);
-        }
+        
     }
 
     private registerEventStart() {

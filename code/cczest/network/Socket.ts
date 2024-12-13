@@ -2,7 +2,7 @@ import { GameSocket } from "./GameSocket";
 import { SocketProxy } from "./SocketProxy";
 import { Debug } from "../Debugger";
 import { Assert } from "../exceptions/Assert";
-import { cc_zest_socket_message, cc_zest_socket_protocol, Constructor, ISocket_extend, IResponseSocketData, ISocketClient, ISocketChange, ISocketMessage, ISocketMessage_extend, ISocketNetworkDelay, ISocketNotConnected, ISocketProtocol, SocketChange, SocketNetworkDelay, SocketNotConnected } from "../lib.ccspark";
+import { cc_zest_socket_message, cc_zest_socket_protocol, Constructor, ISocket_extend, IResponseSocketData, ISocketClient, ISocketChange, ISocketMessage, ISocketMessage_extend, ISocketNetworkDelay, ISocketNotConnected, ISocketProtocol, SocketChange, SocketNetworkDelay, SocketNotConnected } from "../lib.zest";
 import { js } from "cc";
 import { EventSystem } from "../event";
 import { tools } from "../tools";

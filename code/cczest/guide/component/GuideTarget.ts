@@ -1,5 +1,5 @@
 import { Button, Node } from "cc";
-import { IGuideTarget } from "../../lib.ccspark";
+import { IGuideTarget } from "../../lib.zest";
 import { GuideType } from "../GuideEnum";
 import { GuideManager } from "../GuideManager";
 import { GuideWidgetID } from "./GuideWidgetID";
@@ -21,10 +21,12 @@ export class GuideTarget implements IGuideTarget {
         let isFingerGuide: boolean = false;
         for (let k of keysIterrator) {
             const guideAction = guideGroup.get(k);
-            for (const id of guideAction.targetId) {
-                if (id === this.targetId) {
-                    isFingerGuide = guideGroup.get(k).guideType === GuideType.FINGER;
-                    break;
+            if (Array.isArray(guideAction.getData().targetId)) {
+                for (const id of guideAction.getData().targetId) {
+                    if (id === this.targetId) {
+                        isFingerGuide = guideGroup.get(k).guideType === GuideType.FINGER;
+                        break;
+                    }
                 }
             }
             if (isFingerGuide) {

@@ -2,9 +2,9 @@ import { decorator } from "../decorator";
 import { AES } from "./AES";
 import { Encode } from "./EncryptAlgorithm";
 
-const {ccsclass} = decorator;
+const {zestClass} = decorator;
 
-@ccsclass("AESGCM")
+@zestClass("AESGCM")
 export class AESGCM extends AES {
     constructor() {
         super();

@@ -112,8 +112,10 @@ export  class CCEngineUtil {
 
     public static activeAllChild(target: Node, state: boolean): void {
         if (target) {
-            for (let i: number = 0; i < target.children.length; ++i) {
-                target.children[i].active = state;
+            const children = target.children;
+            const len = children.length;
+            for (let i: number = 0; i < len; ++i) {
+                children[i].active = state;
             }
         }
     }

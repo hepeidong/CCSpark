@@ -1,4 +1,4 @@
-import { IBaseEntity } from "../lib.ccspark";
+import { IBaseEntity } from "../lib.zest";
 
 
 export function createMap (forceDictMode?: boolean): any {

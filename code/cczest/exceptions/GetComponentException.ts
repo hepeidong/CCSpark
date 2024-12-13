@@ -1,9 +1,9 @@
 import { decorator } from "../decorator/Decorator";
 import { Exception } from "./Exception";
 
-const {ccsclass} = decorator;
+const {zestClass} = decorator;
 
-@ccsclass("GetComponentException")
+@zestClass("GetComponentException")
 export class GetComponentException extends Exception {
     private _flag: boolean;
     constructor(message: string, flag: boolean) {

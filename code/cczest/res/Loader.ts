@@ -1,7 +1,7 @@
 import { AutoReleasePool, PoolManager } from "./AutoReleasePool";
 import { AutoRelease } from "./AutoRelease";
 import { Asset, AssetManager, Node, SceneAsset, Sprite } from "cc";
-import { cc_zest_loader_AssetType, Constructor, ILoader } from "../lib.ccspark";
+import { cc_zest_loader_AssetType, Constructor, ILoader } from "../lib.zest";
 
 
 type LoadArgs = {
@@ -240,10 +240,13 @@ export class Loader implements ILoader {
      */
     public setSpriteFrame(target: Node|Sprite, path: string) {
         if (target instanceof Node) {
-            this.setSource(path, target);
+            return this.setSource(path, target);
         }
         else if (target instanceof Sprite) {
-            this.setSource(path, target.node);
+            return this.setSource(path, target.node);
+        }
+        else {
+            throw new Error("请传入 ‘Node’ 或 ‘Sprite’ 类型的参数！");
         }
     }
 
@@ -252,7 +255,7 @@ export class Loader implements ILoader {
         if (!autoRelease) {
             autoRelease = target.addComponent(AutoRelease);
         }
-        autoRelease.source(path, this);
+        return autoRelease.source(path, this);
     }
 
     private loadComplete(err: Error, assets: Asset | Asset[], onComplete: (error: Error, assets: Asset|Asset[]) => void) {

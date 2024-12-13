@@ -2,9 +2,9 @@ import { Texture2D } from "cc";
 import { decorator } from "../decorator/Decorator";
 import { Exception } from "./Exception";
 
-const {ccsclass} = decorator;
+const {zestClass} = decorator;
 
-@ccsclass("LoadRemoteTextureException")
+@zestClass("LoadRemoteTextureException")
 export class LoadRemoteTextureException extends Exception {
     private _texture: any;
     constructor(message: string, texture: any) {

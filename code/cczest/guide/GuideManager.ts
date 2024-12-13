@@ -4,7 +4,7 @@ import { GuideTarget } from "./component/GuideTarget";
 import { GuideNormalEvent, Scope } from "./GuideEnum";
 import { GuideSearch } from "./GuideSearch";
 import { Component, director, Node, UITransform, Vec3 } from "cc";
-import { IGuideManager, IGuideWindow } from "../lib.ccspark";
+import { IGuideManager, IGuideWindow } from "../lib.zest";
 import { EventSystem } from "../event";
 import { GuideGroup } from "./GuideGroup";
 import { GuideAction } from "./GuideAction";
@@ -269,7 +269,8 @@ export class GuideManager implements IGuideManager {
     /**获取引导目标的位置 */
     public getTargetPosition(): Vec3[] {
         let vecs: Vec3[] = [];
-        for (let guideTarget of this.guideTargets) {
+        const guideTargets = this.guideTargets;
+        for (const guideTarget of guideTargets) {
             const canvas = director.getScene().getChildByName("Canvas");
             vecs.push(utils.EngineUtil.convertPosition(guideTarget.target, canvas));
         }

@@ -20,7 +20,8 @@ export class CCObjectPool<T> {
     public clear() {
         const onClearHandler = this.onClearHandler;
         if (onClearHandler.active) {
-            for (let i: number = 0; i < this._pool.length; ++i) {
+            const len = this._pool.length;
+            for (let i: number = 0; i < len; ++i) {
                 onClearHandler.dispatch(this._pool[i]);
             }
         }

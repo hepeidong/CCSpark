@@ -55,6 +55,11 @@ export enum SourceType {
    DRAGON_BONES = "dragonBones"
 }
 
+export enum ImageGuideType {
+   FADE_IN = "fadeIn",
+   FADE_OUT = "fadeOut"
+}
+
 export const TweenEasingType =
 ['linear'    , 'smooth'     , 'fade'         , 'constant'     ,
 'quadIn'    , 'quadOut'    , 'quadInOut'    , 'quadOutIn'    ,

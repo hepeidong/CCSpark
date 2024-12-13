@@ -1,4 +1,4 @@
-import { IBaseEntity, IListener } from "../lib.ccspark";
+import { IBaseEntity, IListener } from "../lib.zest";
 import { tools } from "../tools";
 import { JobHandler } from "./JobHandler";
 import { CCSystem } from "./System";

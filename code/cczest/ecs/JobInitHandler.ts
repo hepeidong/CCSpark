@@ -1,4 +1,4 @@
-import { IBaseEntity, JobInitMethod } from "../lib.ccspark";
+import { IBaseEntity, JobInitMethod } from "../lib.zest";
 import { ConversionSystem } from "./ConversionSystem";
 import { JobHandler } from "./JobHandler";
 

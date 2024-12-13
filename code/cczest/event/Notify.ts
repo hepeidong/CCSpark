@@ -1,4 +1,4 @@
-import { INotify } from "../lib.ccspark";
+import { INotify } from "../lib.zest";
 
 export class Notify<T> implements INotify<T> {
     private _type: string;
