@@ -5,7 +5,7 @@ import { UITransform } from 'cc';
 import { Size } from 'cc';
 import { EDITOR } from 'cc/env';
 import { GuideManager } from '../GuideManager';
-import { IImageAction } from '../../lib.zest';
+import { IGuideComponent, IImageAction } from 'zest';
 import { UIOpacity } from 'cc';
 import { Res } from '../../res/Res';
 import { tween } from 'cc';
@@ -25,7 +25,7 @@ const _vec3Temp = v3();
 @ccclass('GuideImage')
 @executeInEditMode
 @disallowMultiple
-export class GuideImage extends Component {
+export class GuideImage extends Component implements IGuideComponent {
 
     @property({
         type: Sprite,
@@ -42,25 +42,25 @@ export class GuideImage extends Component {
     private _imageGuideType: string;
     private _imageMap: Map<string, Node>;
     onLoad () {
-        this.init();
+        this.node.getComponent(UITransform).setContentSize(new Size(2000, 2000));
         this.creatNode();
         
         if (!EDITOR) {
+            this.init();
             this.node.on(Node.EventType.TOUCH_START, function() {}, this);
             this.node.on(Node.EventType.TOUCH_START, this.onClick, this);
         }
     }
 
     start() {
-
+        
     }
 
     init() {
         this._imageMap = new Map();
-        this.node.getComponent(UITransform).setContentSize(new Size(2000, 2000));
     }
 
-    creatNode() {
+    private creatNode() {
         if (!this.image) {
             const node = createSprite('image');
             node.addComponent(UIOpacity);
@@ -76,9 +76,13 @@ export class GuideImage extends Component {
 
     onClick() {
         if (this._imageGuideType === ImageGuideType.FADE_IN) {
-            this.node.active = false;
             GuideManager.instance.guideContinue();
         }
+    }
+
+    doGuideSkip(): void {
+        this.node.active = false;
+        GuideManager.instance.guideSkipAll();
     }
 
     public execGuide() {
@@ -126,8 +130,12 @@ export class GuideImage extends Component {
         }
     }
 
+    clear(): void {
+        
+    }
+
     private loadImage(data: IImageAction, image: Node) {
-        const loader = Res.getLoader(GuideManager.instance.bundble);
+        const loader = Res.getLoader(GuideManager.instance.bundle);
         const source = data.source.replace(new RegExp(".png"), "").replace(new RegExp(".jpg"), "");
         return loader.setSpriteFrame(image, source);
     }

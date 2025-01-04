@@ -1,6 +1,6 @@
 import { Component, EventMouse, EventTouch, Node, _decorator, Input } from "cc";
-import { IBaseLayout, IEventBody } from "../lib.zest";
 import { CCGameWorld } from "./CCGameWorld";
+import { IBaseLayout, IEventBody } from "zest";
 
 
 const {ccclass} = _decorator;

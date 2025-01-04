@@ -1,4 +1,4 @@
-import { IGuideManager } from "../lib.zest";
+import { IGuideManager } from "zest";
 import { Group } from "./GroupEnum";
 import { EventType } from "./GuideEnum";
 import { GuideManager } from "./GuideManager";

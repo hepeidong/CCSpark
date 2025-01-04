@@ -3,7 +3,7 @@ import { STARTUP } from "./Define";
 import { Editor } from "./editor/Editor";
 import { EDITOR } from "cc/env";
 import { js } from "cc";
-import { Constructor, global } from "./lib.zest";
+import { Constructor } from "zest";
 
 
 var _global = typeof window === 'undefined' ? global : window;

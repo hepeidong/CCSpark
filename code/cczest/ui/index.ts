@@ -2,7 +2,7 @@ import { CCGameLayout } from "./CCGameLayout";
 import { CCGuideWindow } from "./CCGuideWindow";
 import { WindowManager } from "./WindowManager";
 import { CCGameWindow } from "./CCGameWindow";
-import { IWindowBase, IGameLayout } from "../lib.zest";
+import { IWindowBase, IGameLayout } from "zest";
 import { UIType } from "./UIType";
 import { Layers } from "cc";
 
@@ -75,8 +75,16 @@ export namespace ui {
      * 获取当前游戏中打开的所有窗户的总个数
      * @returns 返回个数
      */
-    export function getOpenWinCount(): number {
-        return WindowManager.instance.getOpenWinCount();
+    export function getOpenCount(): number {
+        return WindowManager.instance.getOpenCount();
+    }
+
+    /**
+     * 获取指定类型的已经打开的窗口数量
+     * @param winType 
+     */
+    export function getOpenCountOf(winType: Type) {
+        return WindowManager.instance.getOpenCountOf(winType);
     }
 
     /**

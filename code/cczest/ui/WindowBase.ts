@@ -1,7 +1,7 @@
 import { AdapterWidget } from "../app/adapter_manager/component/AdapterWidget";
 import { Debug } from "../Debugger";
 import { SAFE_CALLBACK } from "../Define";
-import { cc_zest_win_model, IAssetRegister, IRegister, IWindowBase } from "../lib.zest";
+import { cc_zest_win_model, IAssetRegister, IRegister, IWindowBase } from "zest";
 import { Mediator } from "../puremvc";
 import { Register } from "../Register/Register";
 import { AssetFactory } from "../res/AssetFactory";
@@ -14,8 +14,11 @@ import { UIType } from "./UIType";
 
 /**
  * author: HePeiDong
+ * 
  * date: 2019/9/13
+ * 
  * name: 预制体页面控制器基类
+ * 
  * description: 窗体基类主要完成窗体里公共的底层功能，例如加载，显示，销毁，释放资源 
  */
 export class WindowBase<T extends Component> extends Mediator implements IWindowBase {
@@ -57,7 +60,7 @@ export class WindowBase<T extends Component> extends Mediator implements IWindow
     public get node(): Node { return this._node; }
     /**访问ID */
     public get accessId(): string { return this.getMediatorName(); }
-    public get bundbleName(): string { return this["_bundleName"]; }
+    public get bundleName(): string { return this["_bundleName"]; }
     public get opened(): boolean { return this._opened; }
     public get hasMask(): boolean { return this._hasMask; }
     public get canClose(): boolean { return this._canClose; }
@@ -239,6 +242,7 @@ export class WindowBase<T extends Component> extends Mediator implements IWindow
 
     private destroy(): void {
         Debug.log(this.toString(), '销毁视图');
+        
         if (isValid(this.node, true)) {
             this.node.destroy();
         }
@@ -306,7 +310,7 @@ export class WindowBase<T extends Component> extends Mediator implements IWindow
      */
     protected onLoad(): void { }
     /**
-     * 视图显示后调用，每次打开界面显示后都会调用
+     * 视图显示后调用，每次打开界面显示后都会调用，此回调不同于组件中的start回调，执行次序是先于试图组件中的start执行，要注意这一点
      * @example
      *  //可以指定传入的参数和参数类型
      *  onStart(data: any) {
@@ -316,7 +320,7 @@ export class WindowBase<T extends Component> extends Mediator implements IWindow
     protected onStart(...args: any[]): void { }
     /**视图关闭后调用，界面关闭后调用，此函数无论在界面关闭时是否被销毁，都会被调用，而且调用时机是后于onDestroy调用 */
     protected onClose(): void { }
-    /**视图销毁后调用，界面销毁后调用，调用时机先于onClose调用 */
+    /**视图销毁后调用，界面销毁后调用，调用时机先于onClose调用，可重写此回调，对游戏中需要手动释放的资源进行释放 */
     protected onDestroy(): void { }
 
     /**

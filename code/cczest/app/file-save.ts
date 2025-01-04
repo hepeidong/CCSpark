@@ -2,9 +2,9 @@ import { native, sys } from "cc";
 import { Debug } from "../Debugger";
 import { STARTUP } from "../Define";
 import { Assert } from "../exceptions/Assert";
-import { IDocument } from "../lib.zest";
 import { UUID } from "../utils";
 import { CCGameWorld } from "./CCGameWorld";
+import { IDocument } from "zest";
 
 type Archive = {archive: string, uuid: string}
 interface FileTable {[n: string]: string; }

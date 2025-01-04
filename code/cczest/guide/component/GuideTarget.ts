@@ -1,5 +1,5 @@
 import { Button, Node } from "cc";
-import { IGuideTarget } from "../../lib.zest";
+import { IGuideTarget } from "zest";
 import { GuideType } from "../GuideEnum";
 import { GuideManager } from "../GuideManager";
 import { GuideWidgetID } from "./GuideWidgetID";

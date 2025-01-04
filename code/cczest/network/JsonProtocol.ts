@@ -1,5 +1,5 @@
 import { decorator } from "../decorator";
-import { ISocket_extend, ISocketProtocol } from "../lib.zest";
+import { ISocket_extend, ISocketProtocol } from "zest";
 import { ProtocolType } from "./SocketEnum";
 
 const {zestClass} = decorator;

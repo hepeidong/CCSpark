@@ -1,11 +1,11 @@
 import { Debug } from "../../Debugger";
 import { createTip, createText, restoreParent, curText } from "../guide_utils";
-import { Component, game, Label, Node, Size, UITransform, _decorator } from "cc";
+import { Component, game, Node, Size, UITransform, _decorator } from "cc";
 import { EDITOR } from "cc/env";
 import { utils } from "../../utils";
 import { GuideManager } from "../GuideManager";
 import { getPriority } from "../../util";
-import { ITextAction } from "../../lib.zest";
+import { IGuideComponent, ITextAction } from "zest";
 import { RichText } from "cc";
 
 const {
@@ -18,7 +18,7 @@ const {
 @ccclass("GuideText")
 @executeInEditMode
 @disallowMultiple
-export  class GuideText extends Component {
+export  class GuideText extends Component implements IGuideComponent {
 
     @property({
         type: RichText,
@@ -33,7 +33,7 @@ export  class GuideText extends Component {
     private tip: Node = null;
 
     @property({
-        range: [0, 1, 0.1],
+        range: [0, 1, 0.02],
         slide: true,
         tooltip: '文字显示的时间间隔(秒)，如果时间为0，则会直接显示文本'
     })
@@ -43,9 +43,8 @@ export  class GuideText extends Component {
         tooltip: "勾选后，文本将自动显示到需要引导的目标节点附近",
         displayName: "自动修正位置"
     })
-    private auto: boolean = false;
+    private correctedPosition: boolean = false;
 
-    private _charIndex: number;          //文本字符索引
     private _timeout: number;            //超时记录
     private _playText: boolean;          //开始显示文本
     private _descript: string;           //文本内容
@@ -55,10 +54,10 @@ export  class GuideText extends Component {
     private _tempStrArr: string[] = [];
 
     onLoad () {
-        this.init();
+        this.node.getComponent(UITransform).setContentSize(new Size(2000, 2000));
         this.creatNode();
-        
         if (!EDITOR) {
+            this.init();
             this.node.on(Node.EventType.TOUCH_START, function() {}, this);
             this.node.on(Node.EventType.TOUCH_START, this.onClick, this);
         }
@@ -69,13 +68,11 @@ export  class GuideText extends Component {
     }
 
     init() {
-        this.node.getComponent(UITransform).setContentSize(new Size(2000, 2000));
         this._playText = false;
         this._timeout = 0;
-        this._charIndex = 0;
     }
 
-    creatNode() {
+    private creatNode() {
         if (!this.text) {
             this.text = createText('text').getComponent(RichText);
             this.node.addChild(this.text.node);
@@ -94,10 +91,12 @@ export  class GuideText extends Component {
     }
 
     onClick() {
-        if (this._charIndex < this._descript.length && this._playText) {
+        if (this._tempStrArr.length > 0 && this._playText) {
             this._playText = false;
             this.text.string = this._descript;
             this.tip.active = true;
+            this._tempStrArr = null;
+            this._tempStrArr = [];
         }
         else {
             if (this._lightTargets) {
@@ -113,9 +112,13 @@ export  class GuideText extends Component {
         }
     }
 
+    doGuideSkip(): void {
+        this.node.active = false;
+        GuideManager.instance.guideSkipAll();
+    }
+
     public execGuide() {
         this.log(this.execGuide, "开始执行文本引导！");
-        this._charIndex = 0;
         this._timeout = 0;
         this.tip.active = false;
         this.text.string = "";
@@ -138,9 +141,13 @@ export  class GuideText extends Component {
             this._playText = true;
             curText(this._descript, this._tempStrArr);
         }
-        if (this.auto) {
+        if (this.correctedPosition) {
             GuideManager.instance.setTextPos(this, this.text.node);
         }
+    }
+
+    clear(): void {
+        
     }
 
     //暂存引导相关数据

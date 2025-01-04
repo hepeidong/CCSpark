@@ -1,5 +1,5 @@
 import { js } from "cc";
-import { cc_zest_http_message, Constructor, IHttpManager, IHttpMessage } from "../lib.zest";
+import { cc_zest_http_message, Constructor, IHttpManager } from "zest";
 import { Debug } from "../Debugger";
 import { Assert } from "../exceptions/Assert";
 import { utils } from "../utils";

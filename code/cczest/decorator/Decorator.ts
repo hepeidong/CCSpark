@@ -1,6 +1,6 @@
 import { js } from "cc";
 import { EDITOR } from "cc/env";
-import { Constructor, IBaseEntity, IConvertToEntity, ISystem, ISystemGroup } from "../lib.zest";
+import { Constructor, IBaseEntity, IConvertToEntity, ISystem, ISystemGroup } from "zest";
 import { STARTUP } from "../Define";
 import { setBundle, setHttpMethod, setHttpUrl, setModel, setProp, setStartScene, setTemplate, setUpdateAfter, setUpdateBefore, setUpdateInGroup } from "./Decorator_setup";
 

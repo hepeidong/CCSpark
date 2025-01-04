@@ -21,7 +21,9 @@ export enum EventType {
    /**每一步引导完成 */
    GUIDE_COMPLETE = 'guide_complete',
    /**引导结束 */
-   GUIDE_OVER = 'guide_over'
+   GUIDE_OVER = 'guide_over',
+   /**跳过引导 */
+   GUIDE_SKIP = 'guide_skip'
 }
 /**引导类型 */
 export enum GuideType {
@@ -34,7 +36,9 @@ export enum GuideType {
    /**图片引导 */
    IMAGE,
    /**动画引导 */
-   ANIMATION
+   ANIMATION,
+   /**摄像机引导 */
+   CAMERA
 }
 
 export enum ActorMoveModel {
@@ -58,6 +62,11 @@ export enum SourceType {
 export enum ImageGuideType {
    FADE_IN = "fadeIn",
    FADE_OUT = "fadeOut"
+}
+
+export enum AnimationType {
+   PLAY = "play",
+   MOVE = "move"
 }
 
 export const TweenEasingType =

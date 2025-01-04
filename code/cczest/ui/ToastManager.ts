@@ -1,5 +1,5 @@
 import { UITransform, v3, Vec3 } from "cc";
-import { IWindowBase } from "../lib.zest";
+import { IWindowBase } from "zest";
 import { Debug } from "../Debugger";
 import { Assert } from "../exceptions/Assert";
 import { LayerManager } from "./LayerManager";
@@ -10,8 +10,11 @@ const _vec3Temp = v3();
 
 /**
  * author: HePeiDong
+ * 
  * date: 2020/7/4
+ * 
  * name: Toast提示视图ui管理器
+ * 
  * description: 队列存储方式。
  */
 export  class ToastManager extends LayerManager {
@@ -125,6 +128,9 @@ export  class ToastManager extends LayerManager {
             }
             const list: IWindowBase[] = this._list as IWindowBase[];
             list.push(view);
+            if (this.canRelease) {
+                this._cacheWindow.push(view);
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-import { IBaseEntity, IEndEntityCommandBufferSystem, ISystem, JobEntityMethod } from "../lib.zest";
+import { IBaseEntity, IEndEntityCommandBufferSystem, ISystem, JobEntityMethod } from "zest";
 import { EntityCommandBufferSystem } from "./EntityCommandBufferSystem";
 import { JobEntityHandler } from "./JobEntityHandler";
 

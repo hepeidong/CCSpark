@@ -1,7 +1,7 @@
 import { Proxy } from "../puremvc";
 import { utils } from "../utils";
 import { Socket } from "./Socket";
-import { cc_zest_socket_data, ISocketMessage } from "../lib.zest";
+import { cc_zest_socket_data, ISocketMessage } from "zest";
 
 export class CCSocketMessage<Response_T, Request_T> extends Proxy<Response_T> implements ISocketMessage<Response_T, Request_T> {
     private _dataType: cc_zest_socket_data;

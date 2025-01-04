@@ -4,7 +4,7 @@ import { GuideTarget } from "./component/GuideTarget";
 import { GuideNormalEvent, Scope } from "./GuideEnum";
 import { GuideSearch } from "./GuideSearch";
 import { Component, director, Node, UITransform, Vec3 } from "cc";
-import { IGuideManager, IGuideWindow } from "../lib.zest";
+import { IGuideManager, IGuideWindow } from "zest";
 import { EventSystem } from "../event";
 import { GuideGroup } from "./GuideGroup";
 import { GuideAction } from "./GuideAction";
@@ -21,6 +21,7 @@ const _vec3Temp = new Vec3();
  */
 export class GuideManager implements IGuideManager {
     private _fingerSpeed: number;                              //手指移动速度
+    private _cameraSpeed: number;                              //摄像机移动速度
     private _syncGuideId: string;                              //同步引导id
     private _guideSearch: GuideSearch;                         //引导检索
     private _guideMask: Node;                                  //引导遮罩
@@ -46,7 +47,7 @@ export class GuideManager implements IGuideManager {
     }
 
 
-    public get bundble() { return ui.getView(this._guideWindow).bundbleName; }
+    public get bundle() { return ui.getView(this._guideWindow).bundleName; }
     public get isGuideClose(): boolean { return this._group.isClose; }
     public get isGuideLaunched(): boolean { return this._group.isGuideLaunched; }
     public get isGuiding(): boolean { return this._group.isGuiding; }
@@ -57,6 +58,7 @@ export class GuideManager implements IGuideManager {
     /**已经执行完的最后的一个引导id，存储的是距离还未执行的引导id最近的一个已执行完的引导id */
     public get guideId() { return this._syncGuideId; }
     public get fingerSpeed(): number { return this._fingerSpeed; }
+    public get cameraSpeed() { return this._cameraSpeed; }
     public get guideGroup() { return this._group.guideGroup; }
     public get guideType(): number { return this.guideAction.guideType; }
     public get lightTargets(): Node[] { return this._group.lightTargets; }
@@ -169,6 +171,10 @@ export class GuideManager implements IGuideManager {
         this._fingerSpeed = (speed > 10 ? 10 : speed) * 200;
     }
 
+    public setCameraSpeed(speed: number) {
+        this._cameraSpeed = (speed > 10 ? 10 : speed) * 200;
+    }
+
     /**
      * 设置引导数据文件
      * @param file 
@@ -259,6 +265,38 @@ export class GuideManager implements IGuideManager {
     /**当前引导完成，继续下一步引导 */
     public guideContinue() {
         this._group.guideContinue();
+    }
+
+    /**
+     * 快进到某一步引导
+     * @param guideId 需要快进到此引导id
+     * @returns 
+     */
+    public guideSkip(guideId: string) {
+        const keys = this._group.guideGroup.keys();
+        for (const key of keys) {
+            if (key === guideId) {
+                return;
+            }
+            else {
+                this._group.guideSkip();
+            }
+        }
+    }
+
+    /**直接跳过所有引导，不再执行此引导组的所有引导 */
+    public guideSkipAll() {
+        const keys = this._group.guideGroup.keys();
+        const guideId = this.guideAction.guideId;
+        let flag = false;
+        for (const key of keys) {
+            if (key === guideId) {
+                flag = true;
+            }
+            if (flag) {
+                this._group.guideSkip();
+            }
+        }
     }
 
     /**删除引导目标 */

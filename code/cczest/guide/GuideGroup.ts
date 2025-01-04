@@ -7,7 +7,7 @@ import { tools } from "../tools";
 import { EventSystem } from "../event";
 import { EventType, GuideType } from "./GuideEnum";
 import { utils } from "../utils";
-import { IFingerAction, ITextAction } from "../lib.zest";
+import { ICameraAction, IFingerAction, ITextAction } from "zest";
 
 
 export class GuideGroup {
@@ -97,7 +97,7 @@ export class GuideGroup {
                 if (guideAction.syncId.length > 0) {
                     //暂存上一步引导的uiId
                     this._isGuideLaunched = true;
-                    this._lastUiId = guideAction.getData<IFingerAction|ITextAction>().uiId;
+                    this._lastUiId = guideAction.getData<IFingerAction|ITextAction|ICameraAction>().uiId;
                     const guideId = guideAction.syncId;
 
                     const currentGuide = this._group.get(guideId);
@@ -155,7 +155,7 @@ export class GuideGroup {
             this.guideComplete();
             if (this._currentGuide.syncId.length > 0) {
                 //暂存上一步引导的uiId
-                this._lastUiId = this._currentGuide.getData<IFingerAction|ITextAction>().uiId;
+                this._lastUiId = this._currentGuide.getData<IFingerAction|ITextAction|ICameraAction>().uiId;
                 const guideAction = this._group.get(this._currentGuide.syncId);
                 this.setCurrentGuide(guideAction);
                 if (this.judgeCurrentGuide() && !this._close) {
@@ -166,6 +166,23 @@ export class GuideGroup {
                         this.guideStart();
                     }
                 }
+            }
+            else if (this._currentGuide.syncId.length === 0) {
+                this.guideOver();
+            }
+        }
+    }
+
+    public guideSkip() {
+        if (this._isGuiding && !this._close) {
+            this.log(this.guideSkip, '跳过当前引导');
+            this.guideComplete();
+            if (this._currentGuide.syncId.length > 0) {
+                //暂存上一步引导的uiId
+                this._lastUiId = this._currentGuide.getData<IFingerAction|ITextAction>().uiId;
+                const guideAction = this._group.get(this._currentGuide.syncId);
+                this.setCurrentGuide(guideAction);
+                this.skipStepGuide();
             }
             else if (this._currentGuide.syncId.length === 0) {
                 this.guideOver();
@@ -225,11 +242,19 @@ export class GuideGroup {
         ) {
             this.newStepGuide();
         }
-        else if (this._guideSearch.isViewOpen(this._currentGuide.getData().uiId)) {
-            this.newStepGuide();
+        else if (this._currentGuide.guideType === GuideType.FINGER ||
+                 this._currentGuide.guideType === GuideType.TEXT ||
+                 this._currentGuide.guideType === GuideType.CAMERA
+        ) {
+            if (this._guideSearch.isViewOpen(this._currentGuide.getData().uiId)) {
+                this.newStepGuide();
+            }
+            else {
+                this._isAgainExecute = true;
+            }
         }
         else {
-            this._isAgainExecute = true;
+            this.error(this.guideStart, "引导类型错误！");
         }
     }
 
@@ -239,6 +264,13 @@ export class GuideGroup {
         this._isAgainExecute = false;  //开始后，重新发起引导的标志要重置为false
         EventSystem.event.emit(GuideGroup.Event.SHOW_GUIDE_MASK, this._currentGuide.getData().uiId);
         EventSystem.event.emit(EventType.GUIDE_START, this._currentGuide.guideId);
+    }
+
+    private skipStepGuide() {
+        this.log(this.skipStepGuide, '跳过当前引导', this._currentGuide.guideId);
+        this._isGuiding = true;
+        this._isAgainExecute = false;  //开始后，重新发起引导的标志要重置为false
+        EventSystem.event.emit(EventType.GUIDE_SKIP, this._currentGuide.guideId);
     }
 
     /**当前这一步引导完成 */
@@ -273,6 +305,10 @@ export class GuideGroup {
     private log(fn: Function, ...subst: any[]) {
         Debug.log(utils.StringUtil.format("[GuideGroup:%s]", fn.name), ...subst);
     }
+
+    private error(fn: Function, ...subst: any[]) {
+        Debug.error(utils.StringUtil.format("[GuideGroup:%s]", fn.name), ...subst);
+    } 
 }
 
 export namespace GuideGroup {

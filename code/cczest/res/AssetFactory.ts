@@ -1,6 +1,6 @@
 import { Debug } from "../Debugger";
 import { SAFE_CALLBACK } from "../Define";
-import { ILoader } from "../lib.zest";
+import { ILoader } from "zest";
 import { Asset, Node, Prefab, resources, Sprite, SpriteAtlas, SpriteFrame } from "cc";
 import { Res } from "./Res";
 import { AssetRegister } from "./AssetRegister";

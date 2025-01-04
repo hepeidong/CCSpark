@@ -3,7 +3,7 @@ import { EntityManager } from "./EntityManager";
 import { asUpdateInGroup, removeElement } from "./ecs-utils";
 import { UUID } from "../utils";
 import { getClassRefList, getSystemClassNames } from "../decorator/Decorator";
-import { Constructor, IBaseEntity, IEntityManager, ISystem, IWorld } from "../lib.zest";
+import { Constructor, IBaseEntity, IEntityManager, ISystem, IWorld } from "zest";
 import { Director, director, ISchedulable, js, Scheduler } from "cc";
 import { BeginInitializationEntityCommandBufferSystem } from "./BeginInitializationEntityCommandBufferSystem";
 import { BeginSimulationEntityCommandBufferSystem } from "./BeginSimulationEntityCommandBufferSystem";

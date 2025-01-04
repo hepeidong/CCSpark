@@ -4,7 +4,7 @@ import { DialoglManager } from "./DialoglManager";
 import { ActivityManager } from "./ActivityManager";
 import { ToastManager } from "./ToastManager";
 import { TopManager } from "./TopManager";
-import { Constructor, IWindowBase } from "../lib.zest";
+import { Constructor, IWindowBase } from "zest";
 import { WindowLayer } from "./WindowLayer";
 import { TouchEffect } from "./TouchEffect";
 import { Assert } from "../exceptions/Assert";
@@ -21,8 +21,11 @@ import { Layers } from "cc";
 
 /**
  * author: HePeiDong
+ * 
  * date: 2020/7/4
+ * 
  * name: 控制器管理器（即ui管理器）
+ * 
  * description: 对控制器进行管理。
  */
 export class WindowManager {
@@ -237,10 +240,7 @@ export class WindowManager {
         if (!manager) {
             return false;
         }
-        if (manager.getCount() > 0) {
-            return manager.delView(isDestroy);
-        }
-        return false;
+        return manager.delView(isDestroy);
     }
 
     public exitView(view: IWindowBase) {
@@ -256,7 +256,8 @@ export class WindowManager {
         }
     }
 
-    public getOpenWinCount(): number {
+    /**获取已经打开的所有窗口数量 */
+    public getOpenCount(): number {
         let count: number = 0;
         for (let ele of this._managers) {
             count += ele.getCount();
@@ -265,14 +266,21 @@ export class WindowManager {
     }
 
     /**
+     * 获取指定类型的已经打开的窗口数量
+     * @param winType 
+     */
+    public getOpenCountOf(winType: number) {
+        const manager = this._managers[winType];
+        return manager.getCount();
+    }
+
+    /**
      * 关闭指定类型的所有已经打开了的UI窗口
      * @param winType 指定的UI类型
      */
     public clearOf(winType: number) {
         const manager = this._managers[winType];
-        if (manager.getCount() > 0) {
-            manager.clear();
-        }
+        manager.clear();
     }
 
     /**
@@ -284,9 +292,7 @@ export class WindowManager {
 
     private clearAll(switchingScene: boolean) {
         for (const manager of this._managers) {
-            if (manager.getCount() > 0) {
-                manager.clear(switchingScene);
-            }
+            manager.clear(switchingScene);
         }
     }
 

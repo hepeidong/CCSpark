@@ -1,18 +1,19 @@
 import { dragonBones, Node } from "cc";
-import { cc_zest_animat_dragonBonesAnimat_type, cc_zest_animat_resolved_type, cc_zest_animat_spineAnimat_type, IDragonBonesAnimat } from "../lib.zest";
 import { Debug } from "../Debugger";
 import { SAFE_CALLBACK } from "../Define";
 import { DBLoad } from "../res/LoadAnimation";
 import { utils } from "../utils";
 import { AnimatBase } from "./AnimatBase";
 import { tools } from "../tools";
+import { Asset } from "cc";
+import { cc_zest_animat_dragonBonesAnimat_type, cc_zest_animat_resolved_type, IDragonBonesAnimat } from "zest";
 
 export  class DragonBonesAnimat extends AnimatBase<cc_zest_animat_dragonBonesAnimat_type> {
     private _selfDB: dragonBones.ArmatureDisplay;
 
     private static isStop: boolean = false;
     constructor(target: Node, bundle: string) {
-        super(() => {
+        super(bundle, () => {
             if (DragonBonesAnimat.isStop && this._animatList) {
                 this._animatList.forEach(animat => {
                     animat.props.played = true;
@@ -75,7 +76,14 @@ export  class DragonBonesAnimat extends AnimatBase<cc_zest_animat_dragonBonesAni
     //龙骨皮肤加载
     public async dBSkinLoaded(props: IDragonBonesAnimat, isClear: boolean) {
         if (props.url) {
-            let asset = await this.awaitLoad(dragonBones.ArmatureDisplay, props.url);
+            let asset: Asset;
+            if (this._assets.has(props.url)) {
+                asset = this._assets.get(props.url);
+            }
+            else {
+                asset = await this.awaitLoad(dragonBones.ArmatureDisplay, props.url);
+                this._assets.set(props.url, asset);
+            }
             if (asset) {
                 props.armatureDisplay.dragonAsset = asset[0];
                 props.armatureDisplay.dragonAtlasAsset = asset[1];

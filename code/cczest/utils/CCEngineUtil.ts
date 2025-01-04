@@ -96,7 +96,7 @@ export  class CCEngineUtil {
      * 微信坐标转换为Cocos坐标
      * @param wxPosition 微信坐标位置
      */
-    public static wechatSpaceToCCSpace(wxPosition: Vec2): Vec2 {
+    public static convertToCocosSpace(wxPosition: Vec2): Vec2 {
         const { width, height } = screen.windowSize;
         let scale: number = AdapterManager.instance.rate;
         let x: number = (wxPosition.x - width / 2) / scale;

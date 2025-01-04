@@ -1,13 +1,16 @@
 import { Layers, Node, Size, size, UITransform } from "cc";
-import { IWindowBase } from "../lib.zest";
+import { IWindowBase } from "zest";
 import { MAX_PRIORITY } from "../Define";
 import { app } from "../app";
 import { setPriority } from "../util";
 
 /**
  * author: HePeiDong
+ * 
  * date: 2019/9/11
+ * 
  * name: 窗口类
+ * 
  * description: 构建窗口层级结构，总共分为三层，分别是根节点层，中间层，顶部层, 其中顶部层为最顶层。
  */
 export class WindowLayer {

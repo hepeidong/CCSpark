@@ -1,5 +1,5 @@
 import { SAFE_CALLBACK, SAFE_CALLBACK_CALLER } from "../Define";
-import { IGameLayout, ITweenAnimat } from "../lib.zest";
+import { IGameLayout, ITweenAnimat } from "zest";
 import { CCBaseLayout } from "../app/CCBaseLayout";
 import { Animation, AnimationClip, Button, Node, Tween, tween, v3, _decorator } from "cc";
 import { EventSystem } from "../event";
@@ -11,8 +11,8 @@ const _vec3Temp_3 = v3(0, 0, 1);
 
 const {ccclass, property} = _decorator;
 
-@ccclass("WinViewProperty")
-class WinViewProperty {
+@ccclass("GameLayoutProperty")
+class GameLayoutProperty {
     @property({
         type: AnimationClip,
         displayName: "窗口弹出动画"
@@ -35,8 +35,8 @@ class WinViewProperty {
 @ccclass("CCGameLayout")
 export class CCGameLayout extends CCBaseLayout implements IGameLayout {
 
-    @property(WinViewProperty)
-    private winViewProperty: WinViewProperty = new WinViewProperty();
+    @property(GameLayoutProperty)
+    private gameLayoutProperty: GameLayoutProperty = new GameLayoutProperty();
 
 
     onLoad() {
@@ -44,8 +44,8 @@ export class CCGameLayout extends CCBaseLayout implements IGameLayout {
         if (!animat) {
             animat = this.node.addComponent(Animation);
         }
-        this.winViewProperty.popupClip && animat.addClip(this.winViewProperty.popupClip);
-        this.winViewProperty.closeClip && animat.addClip(this.winViewProperty.closeClip);
+        this.gameLayoutProperty.popupClip && animat.addClip(this.gameLayoutProperty.popupClip);
+        this.gameLayoutProperty.closeClip && animat.addClip(this.gameLayoutProperty.closeClip);
     }
 
     private _popupAction: Tween<Node>;
@@ -54,7 +54,7 @@ export class CCGameLayout extends CCBaseLayout implements IGameLayout {
     private _startCaller: any;
     private _completeFn: Function;
     private _completeCaller: any;
-    private _bundbleName: string;
+    private _bundleName: string;
     private _tweenAnimat: ITweenAnimat;
 
     start() {
@@ -63,17 +63,17 @@ export class CCGameLayout extends CCBaseLayout implements IGameLayout {
 
     /**创建TweenAnimat对象 */
     public createTweenAnimat() {
-        return TweenAnimat.create(this._bundbleName);
+        return TweenAnimat.create(this._bundleName);
     }
 
     /**创建TweenAudio对象 */
     public createTweenAudio() {
-        return TweenAudio.create(this._bundbleName);
+        return TweenAudio.create(this._bundleName);
     }
 
     public popup(): void {
-        if (this.winViewProperty.popupClip) {
-            this.playAnimat(this.winViewProperty.popupClip.name, this._startFn, this._startCaller);
+        if (this.gameLayoutProperty.popupClip) {
+            this.playAnimat(this.gameLayoutProperty.popupClip.name, this._startFn, this._startCaller);
         }
         else if (this._popupAction) {
             this.node.scale.set(0, 0);
@@ -85,8 +85,8 @@ export class CCGameLayout extends CCBaseLayout implements IGameLayout {
     }
 
     public close(): void {
-        if (this.winViewProperty.closeClip) {
-            this.playAnimat(this.winViewProperty.closeClip.name, this._completeFn, this._completeCaller);
+        if (this.gameLayoutProperty.closeClip) {
+            this.playAnimat(this.gameLayoutProperty.closeClip.name, this._completeFn, this._completeCaller);
         }
         else if (this._closeAction) {
             this._closeAction.start();
@@ -126,15 +126,15 @@ export class CCGameLayout extends CCBaseLayout implements IGameLayout {
     }
 
     public setBackBtnListener(listener: Function) {
-        if (this.winViewProperty.backBtn) {
-            if (this.winViewProperty.backBtn.getComponent(Button)) {
-                EventSystem.click(this.winViewProperty.backBtn, this, () => {
+        if (this.gameLayoutProperty.backBtn) {
+            if (this.gameLayoutProperty.backBtn.getComponent(Button)) {
+                EventSystem.click(this.gameLayoutProperty.backBtn, this, () => {
                     SAFE_CALLBACK(listener);
                 })
             }
             else {
-                this.winViewProperty.backBtn.on(Node.EventType.TOUCH_START, () => {}, this);
-                this.winViewProperty.backBtn.on(Node.EventType.TOUCH_END, () => {
+                this.gameLayoutProperty.backBtn.on(Node.EventType.TOUCH_START, () => {}, this);
+                this.gameLayoutProperty.backBtn.on(Node.EventType.TOUCH_END, () => {
                     SAFE_CALLBACK(listener);
                 }, this);
             }

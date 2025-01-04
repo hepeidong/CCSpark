@@ -5,11 +5,11 @@ import { MacroCommand } from "../puremvc";
 import { SimpleCommand } from "../puremvc";
 import { CCDocument } from "./CCDocument";
 import { Assert } from "../exceptions/Assert";
-import { Constructor, IAdapterManager, IBaseLayout, IDocument, IEventBody } from "../lib.zest";
 import { js } from "cc";
 import { GamePlatform, GameSceneType } from "./AppEnum";
 import { CCBaseLayout } from "./CCBaseLayout";
 import { DataSave } from "./file-save";
+import { Constructor, IAdapterManager, IBaseLayout, IDocument, IEventBody } from "zest";
 
 
 export class app {

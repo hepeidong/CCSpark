@@ -1,5 +1,4 @@
 import { Button, instantiate, js, Node, Prefab } from "cc";
-import { Constructor, IScene, ISceneManager, IWindowBase } from "../lib.zest";
 import { Debug } from "../Debugger";
 import { Assert } from "../exceptions/Assert";
 import { EventSystem } from "../event";
@@ -7,6 +6,7 @@ import { SceneEvent, GameSceneType } from "./AppEnum";
 import { CCGameWorld } from "./CCGameWorld";
 import { setPriority } from "../util";
 import { director } from "cc";
+import { Constructor, IScene, ISceneManager, IWindowBase } from "zest";
 
 export class SceneManager implements ISceneManager {
     private _hasTouchEffect: boolean;

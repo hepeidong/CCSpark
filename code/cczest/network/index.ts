@@ -1,4 +1,4 @@
-import { IHttpManager, ISocket, ITimeManager } from "../lib.zest";
+import { IHttpManager, ISocket, ITimeManager } from "zest";
 import { Http } from "./Http";
 import { CCHttpMessage } from "./HttpMessage";
 import { Socket } from "./Socket";

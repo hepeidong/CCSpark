@@ -11,7 +11,7 @@ import { GuideManager } from "../GuideManager";
 import { getPriority } from "../../util";
 import { GuideAction } from "../GuideAction";
 import { Debug } from "../../Debugger";
-import { ITweenAnimat } from "../../lib.zest";
+import { IFingerAction, IGuideComponent, ITweenAnimat } from "zest";
 
 
 const {
@@ -23,7 +23,7 @@ const {
 @ccclass("GuideFinger")
 @executeInEditMode
 @disallowMultiple
-export  class GuideFinger extends Component {
+export  class GuideFinger extends Component implements IGuideComponent {
     @property({
         type: Node,
         tooltip: '指引特效'
@@ -41,22 +41,23 @@ export  class GuideFinger extends Component {
     })
     position: Vec3 = v3();
 
-    private _auto: boolean = false;           //自动执行下一步引导
+    private _repeatCount: number;             
+    private _canClick: boolean;
     private _clicked: boolean = false;        //防止重复点击
-    private _timeout: number = 0;      
-    private _interval: number = 4;            //自动引导时间间隔
     private _guideTargets: GuideTarget[];     //引导目标暂存
     private _guideInfo: GuideAction;          //引导数据信息暂存
     private _lightTargets: Node[];            //引导高亮节点暂存
     private _targetZIndex: number[] = [];     //目标节点的zIndex
     private _lightParents: Node[] = [];       //高亮父节点
     private _effectTweenAnimat: ITweenAnimat; 
+    private _tweenAction: Tween<Node>;
 
     onLoad () {
         this.createNode();
         if (!EDITOR) {
+            this.init();
             GuideManager.instance.on(EventType.GUIDE_OVER, this.onGuideOver, this);
-            EventSystem.event.on(GuideNormalEvent.FINGER_EVENT, this, this.nextGuide);
+            EventSystem.event.on(GuideNormalEvent.FINGER_EVENT, this, this.onFingerEvent);
         }
     }
 
@@ -64,15 +65,29 @@ export  class GuideFinger extends Component {
         
     }
 
+    private onFingerEvent() {
+        this.currentGuideComplete().then(() => GuideManager.instance.guideContinue());
+    }
+
+    private init() {
+        this._repeatCount = 0;
+        this._canClick = false;
+        this._clicked = false;        
+        this._targetZIndex = [];
+        this._lightParents = [];
+    }
+
     protected onDestroy(): void {
-        GuideManager.instance.off(EventType.GUIDE_OVER, this.onGuideOver, this);
+        if (!EDITOR) {
+            GuideManager.instance.off(EventType.GUIDE_OVER, this.onGuideOver, this);
+        }
     }
 
     private onGuideOver() {
         this.node.active = false;
     }
 
-    createNode() {
+    private createNode() {
         if (!this.finger) {
             this.finger = new Node('finger');
             this.finger.addComponent(UITransform);
@@ -86,35 +101,60 @@ export  class GuideFinger extends Component {
         }
     }
 
+    doGuideSkip(): void {
+        this.node.active = false;
+        this.currentGuideComplete().then(() => GuideManager.instance.guideSkipAll()).catch(() => GuideManager.instance.guideSkipAll());
+    }
+
     /**执行引导 */
     public execGuide() {
         this.log(this.execGuide, "开始执行手指引导！");
-        this._clicked = false;
+        this._repeatCount = 0;
+        this._canClick = false;
+        this._clicked = false;   
         this.storageGuideData();
         this.fingerTurn();
         this.fingerMove();
+        this.addLightTargetsToGuideLayer();
+        this.addClickEvent();
+    }
+
+    public clear() {
+        if (this._effectTweenAnimat) {
+            this._effectTweenAnimat.clear();
+        }
+    }
+
+    private addLightTargetsToGuideLayer() {
         if (this._guideTargets.length > 0) {
-            for (let e of this._lightTargets) {
-                this._lightParents.push(e.parent);
-                this._targetZIndex.push(getPriority(e));
-                GuideManager.instance.addChildToGuideLayer(e);
+            for (const target of this._lightTargets) {
+                this._lightParents.push(target.parent);
+                this._targetZIndex.push(getPriority(target));
+                GuideManager.instance.addChildToGuideLayer(target);
             }
-            if (this._guideTargets.length === 1) {
-                const target: Node = this._guideTargets[0].target;
-                if (target.getComponent(Button)) {
-                    if (!target['guideTouchRegist']) {
-                        target['guideTouchRegist'] = true;
-                        EventSystem.addClickEventHandler(target, this, 'nextGuide');
-                    }
-                }
-                else {
-                    this.error(this.execGuide, `'${this._guideTargets[0].target.name}'目标节点缺少'Button'组件！`);
+        }
+    }
+
+    private addClickEvent() {
+        if (this._guideTargets.length > 0) {
+            const target: Node = this._guideTargets[0].target;
+            if (target.getComponent(Button)) {
+                if (!target['guideTouchRegist']) {
+                    target['guideTouchRegist'] = true;
+                    EventSystem.addClickEventHandler(target, this, 'onClicked');
                 }
             }
             else {
-                this._auto = true;
-                this.disable(false);
+                this.error(this.execGuide, `'${this._guideTargets[0].target.name}'目标节点缺少'Button'组件！`);
             }
+        }
+    }
+
+    onClicked() {
+        if (this._canClick) {
+            this._canClick = false;
+            this._tweenAction.stop();
+            this.currentGuideComplete().then(() => GuideManager.instance.guideContinue());
         }
     }
 
@@ -141,26 +181,48 @@ export  class GuideFinger extends Component {
     private fingerMove() {
         let posisions: Vec3[] = GuideManager.instance.getTargetPosition();
         if (posisions.length > 0) {
+            const data = GuideManager.instance.guideAction.getData<IFingerAction>();
+            const easing = data.easing;
             this.playAnimat(false);
             //计算手指和引导目标两点距离
-            let dis: number = utils.MathUtil.Vector2D.distance(this.finger.position, v3(posisions[0].x, posisions[0].y));
+            const dis0: number = utils.MathUtil.Vector2D.distance(this.finger.position, v3(posisions[0].x, posisions[0].y));
             //计算移动时间
-            let t: number = dis / GuideManager.instance.fingerSpeed;
-            let tweenAction: Tween<Node> = tween(this.finger).to(t, {position: v3(posisions[0].x, posisions[0].y)});
+            const t0: number = dis0 / GuideManager.instance.fingerSpeed;
+            this._tweenAction = tween(this.finger).to(t0, {position: v3(posisions[0].x, posisions[0].y)}, {easing: easing});
+            
             if (posisions.length > 1) {
-                tweenAction.repeatForever(tween(this.finger).to(t, {position: v3(posisions[1].x, posisions[1].y)}));
-            }
-            tweenAction.call(() => {
-                GuideManager.instance.hideBlockInputLayer();
-                if (posisions.length === 1) {
-                    this.playAnimat(true);
+                const len = posisions.length;
+                const currentPos = v3();
+                for (let i = 1; i < len; ++i) {
+                    currentPos.set(posisions[i - 1].x, posisions[i - 1].y);
+                    const pos = v3(posisions[i].x, posisions[i].y);
+                    const d = utils.MathUtil.Vector2D.distance(currentPos, pos);
+                    const fingerSpeed = data.speed * 200; //手指循环移动速度
+                    const t = d / fingerSpeed;
+                    this._tweenAction.to(t, {position: pos}, {easing: easing});
                 }
-            });
-            tweenAction.start();
+                this._tweenAction.call(() => this.tweenActionCall(len));
+                this._tweenAction.repeat(data.repeatTotal, this._tweenAction);
+            }
+            else {
+                this._tweenAction.call(() => this.tweenActionCall(posisions.length));
+            }
+            this._tweenAction.start();
         }
     }
 
-    playAnimat(play: boolean) {
+    private tweenActionCall(len: number) {
+        this._repeatCount++;
+        if (this._repeatCount === 1) {
+            GuideManager.instance.hideBlockInputLayer();
+            this._canClick = true;
+        }
+        if (len === 1) {
+            this.playAnimat(true);
+        }
+    }
+
+    private playAnimat(play: boolean) {
         if (!this._effectTweenAnimat) {
             this._effectTweenAnimat = tweenAnimat(this._effect);
         }
@@ -191,31 +253,36 @@ export  class GuideFinger extends Component {
         this._lightTargets = GuideManager.instance.lightTargets;
     }
 
-    //下一步引导执行
-    private nextGuide() {
-        if (!this._clicked && this._guideTargets && this._lightTargets) {
-            this._clicked = true;
-            const guideTargets = this._guideTargets;
-            const lightTargets = this._lightTargets;
-            for (let guideTarget of guideTargets) {
-                const guideIds = guideTarget.guideIds;
-                const len = guideIds.length;
-                for (let i: number = 0; i < len; ++i) {
-                    if (this._guideInfo.guideId === guideIds[i]) {
-                        guideIds.splice(i, 1);
-                        let index: number = 0;
-                        for (let ele of lightTargets) {
-                            restoreParent(ele, this._targetZIndex[index], this._lightParents[index++]);
+    //当前这一步引导完成，下一步引导执行
+    private currentGuideComplete() {
+        return new Promise((resolve, reject) => {
+            if (!this._clicked && this._guideTargets && this._lightTargets) {
+                this._clicked = true;
+                const guideTargets = this._guideTargets;
+                const lightTargets = this._lightTargets;
+                for (let guideTarget of guideTargets) {
+                    const guideIds = guideTarget.guideIds;
+                    const len = guideIds.length;
+                    for (let i: number = 0; i < len; ++i) {
+                        if (this._guideInfo.guideId === guideIds[i]) {
+                            guideIds.splice(i, 1);
+                            let index: number = 0;
+                            for (let ele of lightTargets) {
+                                restoreParent(ele, this._targetZIndex[index], this._lightParents[index++]);
+                            }
+                            this._targetZIndex.splice(0, this._targetZIndex.length);
+                            this._lightParents.splice(0, this._lightParents.length);
+                            this.node.active = false;
+                            resolve(true);
+                            break;
                         }
-                        this._targetZIndex.splice(0, this._targetZIndex.length);
-                        this._lightParents.splice(0, this._lightParents.length);
-                        this.node.active = false;
-                        GuideManager.instance.guideContinue();
-                        break;
                     }
                 }
             }
-        }
+            else {
+                reject();
+            }
+        });
     }
 
     private disable(enable: boolean) {
@@ -236,14 +303,6 @@ export  class GuideFinger extends Component {
     }
 
     update (dt: number) {
-        if (this._auto) {
-            this._timeout += dt;
-            if (this._timeout >= this._interval) {
-                this._auto = false;
-                this._timeout = 0;
-                this.disable(true);
-                this.nextGuide();
-            }
-        }
+        
     }
 }

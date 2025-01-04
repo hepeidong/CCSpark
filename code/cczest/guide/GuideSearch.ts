@@ -6,7 +6,7 @@ import { Node } from "cc";
 import { setPriority } from "../util";
 import { GuideAction } from "./GuideAction";
 import { utils } from "../utils";
-import { IFingerAction, ITextAction } from "../lib.zest";
+import { ICameraAction, IFingerAction, ITextAction } from "zest";
 
 type panel_t = {
     target: Node;
@@ -16,9 +16,9 @@ type panel_t = {
 /**检索引导目标 */
  export class GuideSearch {                                                         
     private _guideGroup: Map<string, GuideAction>;    //引导配置文件数据
-    private _guidePanels: Map<string, panel_t>;                //被引导的页面节点
-    private _guideTargets: Map<string, GuideTarget>;       //引导目标
-    private _lightTargets: Map<string, Node[]>;             //高亮的目标节点
+    private _guidePanels: Map<string, panel_t>;       //被引导的页面节点
+    private _guideTargets: Map<string, GuideTarget>;  //引导目标
+    private _lightTargets: Map<string, Node[]>;       //高亮的目标节点
 
     constructor() {
         this._guidePanels = new Map();
@@ -86,7 +86,6 @@ type panel_t = {
                 });
             }
         }
-        
     }
 
     public addGuideTarget(target: GuideTarget) {
@@ -143,42 +142,42 @@ type panel_t = {
     //存储引导目标
     private storageGuideTarget(target: Node) {
         let targetID: GuideWidgetID = target.getComponent(GuideWidgetID);
-        if (!targetID) {
-            return;
-        }
-        let guideTargets: GuideTarget;
-        let flag: boolean = false;
-        const keysItertor = this._guideGroup.keys();
-        for (let key of keysItertor) {
-            //检索并存储引导目标
-            const guideAction = this._guideGroup.get(key);
-            if (Array.isArray(guideAction.getData().targetId)) {
-                if (guideAction.getData().targetId.indexOf(targetID.ID) > -1) {
-                    flag = true;
-                    if (!guideTargets) {
-                        guideTargets = new GuideTarget();
+        if (targetID && !targetID.isCamera) {
+            const id = targetID.ID;
+            let guideTargets: GuideTarget;
+            let flag: boolean = false;
+            const keysItertor = this._guideGroup.keys();
+            for (let key of keysItertor) {
+                //检索并存储引导目标
+                const guideAction = this._guideGroup.get(key);
+                if (Array.isArray(guideAction.getData().targetId)) {
+                    if (guideAction.getData().targetId.indexOf(id) > -1) {
+                        flag = true;
+                        if (!guideTargets) {
+                            guideTargets = new GuideTarget();
+                        }
+                        guideTargets.target = target;
+                        guideTargets.guideIds.push(guideAction.guideId);
+                        guideTargets.init();
                     }
-                    guideTargets.target = target;
-                    guideTargets.guideIds.push(guideAction.guideId);
-                    guideTargets.init();
                 }
             }
-        }
-        if (flag) {
-            this.addGuideTarget(guideTargets);
+            if (flag) {
+                this.addGuideTarget(guideTargets);
+            }
         }
     }
 
     private storageLightTarget(guideId: string, target: Node) {
         let targetID: GuideWidgetID = target.getComponent(GuideWidgetID);
-        if (!targetID) {
-            return;
-        }
-        const targetId = this._guideGroup.get(guideId).getData<IFingerAction|ITextAction>().targetId;
-        for (const id of targetId) {
-            if (id === targetID.ID) {
-                this.addLightTarget(guideId, target);
-                break;
+        if (targetID && !targetID.isCamera) {
+            const tId = targetID.ID;
+            const targetId = this._guideGroup.get(guideId).getData<IFingerAction|ITextAction|ICameraAction>().targetId;
+            for (const id of targetId) {
+                if (id === tId) {
+                    this.addLightTarget(guideId, target);
+                    break;
+                }
             }
         }
     }

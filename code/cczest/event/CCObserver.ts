@@ -1,4 +1,4 @@
-import { IGameObserver, INotify } from "../lib.zest";
+import { IGameObserver, INotify } from "zest";
 
 export abstract class CCObserver<T> implements IGameObserver<T> {
     private _name: string;

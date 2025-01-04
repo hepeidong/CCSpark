@@ -1,4 +1,4 @@
-import { IDocument } from "../lib.zest";
+import { IDocument } from "zest";
 import { Proxy } from "../puremvc";
 import { utils } from "../utils";
 import { DataSave } from "./file-save";

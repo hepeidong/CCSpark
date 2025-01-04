@@ -1,5 +1,5 @@
 import { Debug } from "../Debugger";
-import { cc_zest_win_activity, IActivityManager, IWindowBase } from "../lib.zest";
+import { cc_zest_win_activity, IActivityManager, IWindowBase } from "zest";
 import { tools } from "../tools";
 import { DialoglManager } from "./DialoglManager";
 import { WindowLayer } from "./WindowLayer";
@@ -7,8 +7,11 @@ import { WindowLayer } from "./WindowLayer";
 
 /**
  * author: HePeiDong
+ * 
  * date: 2020/7/4
+ * 
  * name: 活动ui管理器
+ * 
  * description: 管理进入游戏中弹出的各种活动ui，采用优先级管理，优先级越高，越早弹出，优先队列存储方式。
  */
 export  class ActivityManager extends DialoglManager implements IActivityManager {

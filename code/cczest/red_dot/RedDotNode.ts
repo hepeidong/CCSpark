@@ -1,6 +1,6 @@
 import { Node } from "cc";
 import { EventSystem } from "../event";
-import { IRedDotChange, RedDotChange } from "../lib.zest";
+import { IRedDotChange, RedDotChange } from "zest";
 
 interface IRedDot {
     node: Node;

@@ -1,4 +1,4 @@
-import { INotify } from "../lib.zest";
+import { INotify } from "zest";
 
 export class Notify<T> implements INotify<T> {
     private _type: string;

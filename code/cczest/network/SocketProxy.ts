@@ -1,7 +1,7 @@
 import { GameSocket } from "./GameSocket";
 import { js } from "cc";
 import { app } from "../app";
-import { Constructor } from "../lib.zest";
+import { Constructor } from "zest";
 
 enum Sockey_Key {
     WECHAT_SOCK = "WXSocket",

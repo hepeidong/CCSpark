@@ -1,11 +1,11 @@
 import { Debug } from "../Debugger";
 import { SAFE_CALLBACK } from "../Define";
 import { Assert } from "../exceptions/Assert";
-import { cc_zest_audio_saudio_resolved_type, cc_zest_audio_type, IAudio, IAudioBGM, ILoader, ITweenAudio } from "../lib.zest";
 import { AudioClip, resources } from "cc";
 import { AudioEngine } from "./AudioEngine";
 import { Res } from "../res/Res";
 import { tools } from "../tools";
+import { cc_zest_audio_type, IAudio, IAudioBGM, IAudioEffect, ILoader, ITweenAudio } from "zest";
 
 
 /**
@@ -19,12 +19,13 @@ export class TweenAudio implements ITweenAudio {
     private _audioIndex: number;
     private _audioCount: number;
     private _canPlay: boolean;
-    private _order: boolean;
+    private _model: TweenAudio.Model;
     private _bundle: string;
     private _audioList: string[];
+    private _audioPool: Map<string, cc_zest_audio_type>;
     private _rejected: Function;
     private static _audioEngine: AudioEngine = new AudioEngine();
-    private static _audioPool: Map<string, cc_zest_audio_type> = new Map();
+    
  
     constructor(bundle: string) {
         this._bundle = bundle;
@@ -32,8 +33,9 @@ export class TweenAudio implements ITweenAudio {
         this._audioIndex = 0;
         this._audioCount = 0;
         this._canPlay = false;
-        this._order = false;
+        this._model   = TweenAudio.Model.NONE;
         this._audioList = [];
+        this._audioPool = new Map();
     }
 
     public static create(bundle: string = resources.name): ITweenAudio {
@@ -47,12 +49,12 @@ export class TweenAudio implements ITweenAudio {
     }
 
     public set volume(v: number) {
-        let audioPro: cc_zest_audio_type = TweenAudio._audioPool.get(this._audioList[this._audioIndex]);
+        let audioPro: cc_zest_audio_type = this._audioPool.get(this._audioList[this._audioIndex]);
         if (audioPro && audioPro.audioID > -1) {
             TweenAudio.audioEngine.setVolume(audioPro.audioID, v);
         }
-        else {
-            this.notLoadAudio();
+        else if (audioPro) {
+            this.notLoadAudio(audioPro.audio.url);
         }
     }
 
@@ -62,24 +64,24 @@ export class TweenAudio implements ITweenAudio {
             this._err = new Error('不能同时获取多个音频的音量!');
         }
         else {
-            let audioPro: cc_zest_audio_type = TweenAudio._audioPool.get(this._audioList[this._audioIndex]);
+            let audioPro: cc_zest_audio_type = this._audioPool.get(this._audioList[this._audioIndex]);
             if (audioPro && audioPro.audioID > -1) {
                 return TweenAudio.audioEngine.getVolume(audioPro.audioID);
             }
-            else {
-                this.notLoadAudio();
+            else if (audioPro) {
+                this.notLoadAudio(audioPro.audio.url);
             }
         }
         return -1;
     }
 
     public set loop(l: boolean) {
-        let audioPro: cc_zest_audio_type = TweenAudio._audioPool.get(this._audioList[this._audioIndex]);
+        let audioPro: cc_zest_audio_type = this._audioPool.get(this._audioList[this._audioIndex]);
         if (audioPro && audioPro.audioID > -1) {
             TweenAudio.audioEngine.setLoop(audioPro.audioID, l);
         }
-        else {
-            this.notLoadAudio();
+        else if (audioPro) {
+            this.notLoadAudio(audioPro.audio.url);
         }
     }
 
@@ -89,12 +91,12 @@ export class TweenAudio implements ITweenAudio {
             this._err = new Error('不能同时获取多个音频的循环状态!');
         }
         else {
-            let audioPro: cc_zest_audio_type = TweenAudio._audioPool.get(this._audioList[this._audioIndex]);
+            let audioPro: cc_zest_audio_type = this._audioPool.get(this._audioList[this._audioIndex]);
             if (audioPro && audioPro.audioID > -1) {
                 return TweenAudio.audioEngine.isLoop(audioPro.audioID);
             }
-            else {
-                this.notLoadAudio();
+            else if (audioPro) {
+                this.notLoadAudio(audioPro.audio.url);
             }
         }
         return false;
@@ -102,10 +104,13 @@ export class TweenAudio implements ITweenAudio {
 
     /**
      * 设置音频播放模式
-     * @param order 是否顺序播放,true为顺序播放,默认值为false
+     * @param model 是否顺序播放
      */
-    public audio(order: boolean = false): TweenAudio {
-        this._order = order;
+    public audio(model: TweenAudio.Model): TweenAudio {
+        if (this._model !== TweenAudio.Model.NONE) {
+            this.reset();
+        }
+        this._model = model;
         return this;
     }
 
@@ -119,12 +124,12 @@ export class TweenAudio implements ITweenAudio {
             this._err = new Error('必须指定音频资源的路径！');
         }
         else {
-            this._audioCount++;
-            if (TweenAudio._audioPool.has(props.url)) {
-                TweenAudio._audioPool.get(props.url).audio = props;
+            this._audioList.push(props.url);
+            if (this._audioPool.has(props.url)) {
+                this._audioPool.get(props.url).audio = props;
             }
             else {
-                TweenAudio._audioPool.set(props.url, this.bgmProps(props));
+                this._audioPool.set(props.url, this.bgmProps(props));
             }
             this.audioLoaded(props);
         }
@@ -140,16 +145,24 @@ export class TweenAudio implements ITweenAudio {
             this._err = new Error('必须指定音频资源的路径！');
         }
         else {
-            this._audioCount++;
-            if (TweenAudio._audioPool.has(props.url)) {
-                TweenAudio._audioPool.get(props.url).audio = props;
+            this._audioList.push(props.url);
+            if (this._audioPool.has(props.url)) {
+                this._audioPool.get(props.url).audio = props;
             }
             else {
-                TweenAudio._audioPool.set(props.url, this.effectProps(props));
+                this._audioPool.set(props.url, this.effectProps(props));
             }
             this.audioLoaded(props);
         }
         return this;
+    }
+
+    public onPlay(resolve: (currentTime: number) => void) {
+        return this.when("play", resolve);
+    }
+
+    public onStop(resolve: (duration: number) => void) {
+        return this.when("stop", resolve);
     }
     
     /**
@@ -157,7 +170,7 @@ export class TweenAudio implements ITweenAudio {
      * @param callType 回调类型
      * @param resolve 执行的回调
      */
-    public when<T extends 'play'|'stop', P = T extends 'play'|'stop' ? (currentTime: number) => void : (duration: number) => void>(callType: T, resolve: P): TweenAudio {
+    private when<T extends 'play'|'stop'>(callType: T, resolve: Function): TweenAudio {
         let len: number = this._audioList.length;
         if (len === 0) {
             this._status = 'rejected';
@@ -165,16 +178,71 @@ export class TweenAudio implements ITweenAudio {
         }
         else {
             let key: string = this._audioList[len - 1];
-            TweenAudio._audioPool.get(key).callbacks.push({type: callType, call: resolve});
+            this._audioPool.get(key).callbacks.push({type: callType, call: resolve});
         }
         return this;
+    }
+
+    /**开始播放音频 */
+    public play(): TweenAudio {
+        this._canPlay = true;
+        if (this._audioList.length === this._audioCount) {
+            this.tryPlay();
+        }
+        return this;
+    }
+
+    public pause(): TweenAudio {
+        const len = this._audioList.length;
+        for (let i: number = 0; i < len; ++i) {
+            let audioPro: cc_zest_audio_type = this._audioPool.get(this._audioList[i]);
+            if (audioPro && audioPro.audioID > -1) {
+                TweenAudio.audioEngine.pause(audioPro.audioID);
+            }
+            else if (audioPro) {
+                this.notLoadAudio(audioPro.audio.url);
+            }
+        }
+        return this;
+    }
+
+    public resume(): TweenAudio {
+        const len = this._audioList.length;
+        for (let i: number = 0; i < len; ++i) {
+            let audioPro: cc_zest_audio_type = this._audioPool.get(this._audioList[i]);
+            if (audioPro && audioPro.audioID > -1) {
+                TweenAudio.audioEngine.resume(audioPro.audioID);
+            }
+            else if (audioPro) {
+                this.notLoadAudio(audioPro.audio.url);
+            }
+        }
+        return this;
+    }
+
+    public stop(): TweenAudio {
+        this._canPlay = false;
+        this.tryPlay();
+        return this;
+    }
+
+    /**释放音频资源 */
+    public clear() {
+        if (Res.hasLoader(this._bundle)) {
+            const loader = Res.getLoader(this._bundle);
+            this._audioPool.forEach((audio) => {
+                loader.delete(audio.clip);
+            });
+            this._audioPool.clear();
+            this.reset();
+        }
     }
 
     /**
      * 抛出异常
      * @param reject 
      */
-    public cath(reject: (e: Error) => void): ITweenAudio {
+    public catch(reject: (e: Error) => void): ITweenAudio {
         if (this._status === 'rejected') {
             SAFE_CALLBACK(reject, this._err);
         }
@@ -190,74 +258,67 @@ export class TweenAudio implements ITweenAudio {
         }
     }
 
-    /**开始播放音频 */
-    public play(): TweenAudio {
-        this._canPlay = true;
-        if (this._audioList.length === this._audioCount) {
-            this.tryPlay();
-        }
-        return this;
-    }
-
-    public pause(): TweenAudio {
-        const len = this._audioList.length;
-        for (let i: number = 0; i < len; ++i) {
-            let audioPro: cc_zest_audio_type = TweenAudio._audioPool.get(this._audioList[i]);
-            if (audioPro && audioPro.audioID > -1) {
-                TweenAudio.audioEngine.pause(audioPro.audioID);
-            }
-            else {
-                this.notLoadAudio();
-            }
-        }
-        return this;
-    }
-
-    public resume(): TweenAudio {
-        const len = this._audioList.length;
-        for (let i: number = 0; i < len; ++i) {
-            let audioPro: cc_zest_audio_type = TweenAudio._audioPool.get(this._audioList[i]);
-            if (audioPro && audioPro.audioID > -1) {
-                TweenAudio.audioEngine.resume(audioPro.audioID);
-            }
-            else {
-                this.notLoadAudio();
-            }
-        }
-        return this;
-    }
-
-    public stop(): TweenAudio {
-        this._canPlay = false;
-        if (this._audioList.length === this._audioCount) {
-            this.tryPlay();
-        }
-        return this;
-    }
-
     private stopAudio() {
-        const len = this._audioList.length;
-        for (let i: number = 0; i < len; ++i) {
-            let audioPro: cc_zest_audio_type = TweenAudio._audioPool.get(this._audioList[i]);
-            
-            if (audioPro && audioPro.audioID > -1) {
-                TweenAudio.audioEngine.stop(audioPro.audioID);
+        if (this._model === TweenAudio.Model.LOOP || this._model === TweenAudio.Model.ORDER) {
+            if (this._audioIndex < this._audioList.length) {
+                const url = this._audioList[this._audioIndex];
+                const audioPro = this._audioPool.get(url);
+                if (audioPro) {
+                    if (audioPro.audioID > -1) {
+                        if (!audioPro.played) {
+                            TweenAudio.audioEngine.stop(audioPro.audioID);
+                        }
+                    }
+                    else {
+                        this.runPlayCallbacks(audioPro);
+                        this.notLoadAudio(audioPro.audio.url);
+                    }
+                    if (this._model === TweenAudio.Model.LOOP) {
+                        this.onFinishCallbackInLoop(audioPro);
+                    }
+                    else if (this._model === TweenAudio.Model.ORDER) {
+                        this.onFinishCallbackInOrder(audioPro);
+                    }
+                }
             }
-            else {
-                this.notLoadAudio();
+        }
+        else if (this._model === TweenAudio.Model.PARALLEL) {
+            const len = this._audioList.length;
+            for (let i: number = 0; i < len; ++i) {
+                const audioPro: cc_zest_audio_type = this._audioPool.get(this._audioList[i]);
+                if (audioPro) {
+                    if (audioPro.audioID > -1) {
+                        if (!audioPro.played) {
+                            TweenAudio.audioEngine.stop(audioPro.audioID);
+                        }
+                    }
+                    else {
+                        this.runPlayCallbacks(audioPro);
+                        this.notLoadAudio(audioPro.audio.url);
+                    }
+                    this.onFinishCallback(audioPro);
+                }
             }
         }
     }
 
     private tryPlay(): void {
-        if (this._audioList.length === this._audioCount && this._canPlay) {
+        if (this._canPlay) {
             try {
                 if (this._status === 'pending') {
-                    if (this._order) {
-                        this.playInterval();
+                    if (this._model === TweenAudio.Model.ORDER) {
+                        this.playInterval(this.playAudioInOrder.bind(this));
+                    }
+                    else if (this._model === TweenAudio.Model.LOOP) {
+                        this.playInterval(this.playAudioInLoop.bind(this));
+                    }
+                    else if (this._model === TweenAudio.Model.PARALLEL) {
+                        this.playAudioAll();
                     }
                     else {
-                        this.playAudio();
+                        this._status = 'rejected';
+                        this._err = new Error(`播放模式是非法的，当前播放模式为 ${this._model}， 请调用 audio 函数设置播放模式！`);
+                        this.callRejected();
                     }
                 }
             } catch (error) {
@@ -266,7 +327,7 @@ export class TweenAudio implements ITweenAudio {
                 this.callRejected();
             }
         }
-        else if (this._audioList.length === this._audioCount && !this._canPlay) {
+        else if (!this._canPlay) {
             try {
                 if (this._status === 'pending') {
                     this.stopAudio();
@@ -281,13 +342,21 @@ export class TweenAudio implements ITweenAudio {
 
     private async audioLoaded(props: IAudio) {
         Debug.log('[AudioManager] audioLoaded TweenAudio props', props);
-        const clip = await this.awaitLoad(props.url).catch((e) => {
-            this._status = e;
-            this.callRejected();
-        });
-        if (clip) {
-            this._audioList.push(props.url);
-            TweenAudio._audioPool.has(props.url) && (TweenAudio._audioPool.get(props.url).clip = clip);
+        let clip: AudioClip|void;
+        const audioData = this._audioPool.get(props.url);
+        if (audioData.clip) {
+            clip = audioData.clip;
+            this._audioCount++;
+        }
+        else {
+            clip = await this.awaitLoad(props.url).catch((e) => {
+                this._status = e;
+                this.callRejected();
+            });
+            if (clip) {
+                this._audioCount++;
+                this._audioPool.has(props.url) && (this._audioPool.get(props.url).clip = clip);
+            }
         }
         if (this._status === 'pending') {
             this.tryPlay();
@@ -312,6 +381,7 @@ export class TweenAudio implements ITweenAudio {
                 });
             });
         }
+        return undefined;
     }
 
     private createLoader() {
@@ -330,75 +400,20 @@ export class TweenAudio implements ITweenAudio {
     }
 
     private reset(): void {
-        this._status = 'pending';
+        this._status     = 'pending';
         this._audioIndex = 0;
         this._audioCount = 0;
         this._canPlay = false;
-        this._order = false;
         this._audioList.splice(0, this._audioList.length);
     }
-    /**一次性播放队列所有音频 */
-    private playAudio() {
-        const len = this._audioList.length;
-        for (let i: number = 0; i < len; ++i) {
-            let key: string = this._audioList[i];
-            let audioPro: cc_zest_audio_type = TweenAudio._audioPool.get(key);
-            let audioID: number;
-            if (audioPro.bgm) {
-                if ((audioPro.audio as IAudioBGM).superpose) {
-                    audioID = TweenAudio.audioEngine.playBGM(audioPro.clip, audioPro.audio.loop, audioPro.audio.volume);
-                }
-                else {
-                    audioID = TweenAudio.audioEngine.playMusic(audioPro.clip, audioPro.audio.loop, audioPro.audio.volume);
-                }
-            }
-            else {
-                audioID = TweenAudio.audioEngine.playEffect(audioPro.clip, audioPro.audio.loop, audioPro.audio.volume);
-            }
-            audioPro.audioID = audioID;
-            TweenAudio._audioPool.set(key, audioPro);
-            //设置音频结束后的回调
-            TweenAudio.audioEngine.setFinishCallback(audioID, () => this.onFinishCallback(audioPro, audioID));
-            const callbacks = audioPro.callbacks;
-            for (const callback of callbacks) {
-                if (callback.type === 'play') {
-                    SAFE_CALLBACK(callback.call, TweenAudio.audioEngine.getCurrentTime(audioID));
-                }
-            }
-        }
-    }
-    //非顺序播放模式下,每个音频结束的回调
-    private onFinishCallback(audioPro: cc_zest_audio_type, audioID: number) {
-        const callbacks = audioPro.callbacks;
-        for (const callback of callbacks) {
-            if (callback.type === 'stop') {
-               SAFE_CALLBACK(callback.call, TweenAudio.audioEngine.getDuration(audioID));
-            }
-        }
-        TweenAudio.audioEngine.stop(audioID);
-    }
-    //顺序播放模式下每个音频结束的回调
-    private onFinishCallbackInOrder(audioPro: cc_zest_audio_type, audioID: number) {
-        const callbacks = audioPro.callbacks;
-        for (const callback of callbacks) {
-            if (callback.type === 'stop') {
-               SAFE_CALLBACK(callback.call, TweenAudio.audioEngine.getDuration(audioID));
-            }
-        }
-        this._audioIndex++;
-        if (this._audioIndex < this._audioList.length) {
-            this.playInterval();
-        }
-        else {
-            this.reset();
-        }
-        TweenAudio.audioEngine.stop(audioID);
-    }
-    /**按顺序播放音频 */
-    private playAudioInOrder(resolves: cc_zest_audio_saudio_resolved_type[]) {
-        let key: string = this._audioList[this._audioIndex];
-        let audioPro: cc_zest_audio_type = TweenAudio._audioPool.get(key);
+
+    private playAudio(index: number, finishCallback: (audioPro: cc_zest_audio_type) => void) {
+        const key: string = this._audioList[index];
+        const audioPro: cc_zest_audio_type = this._audioPool.get(key);
         let audioID: number;
+        if (this._model === TweenAudio.Model.LOOP || this._model === TweenAudio.Model.ORDER) {
+            audioPro.audio.loop = false;
+        }
         if (audioPro.bgm) {
             if ((audioPro.audio as IAudioBGM).superpose) {
                 audioID = TweenAudio.audioEngine.playBGM(audioPro.clip, audioPro.audio.loop, audioPro.audio.volume);
@@ -408,26 +423,105 @@ export class TweenAudio implements ITweenAudio {
             }
         }
         else {
-            audioID = TweenAudio.audioEngine.playEffect(audioPro.clip, audioPro.audio.loop, audioPro.audio.volume);
+            audioID = TweenAudio.audioEngine.playEffect(audioPro.clip, (audioPro.audio as IAudioEffect).oneShot, audioPro.audio.loop, audioPro.audio.volume);
         }
         audioPro.audioID = audioID;
-        TweenAudio._audioPool.set(key, audioPro);
+        this._audioPool.set(key, audioPro);
         //设置音频结束后的回调
-        TweenAudio.audioEngine.setFinishCallback(audioID, () => this.onFinishCallbackInOrder(audioPro, audioID));
-        for (let e of resolves) {
-            if (e.type === 'play') {
-                SAFE_CALLBACK(e.call, TweenAudio.audioEngine.getCurrentTime(audioID));
+        TweenAudio.audioEngine.setFinishCallback(audioID, () => finishCallback(audioPro));
+        this.runPlayCallbacks(audioPro);
+    }
+
+    /**一次性播放队列所有音频 */
+    private playAudioAll() {
+        const len = this._audioList.length;
+        if (len === this._audioCount) {
+            for (let i: number = 0; i < len; ++i) {
+                this.playAudio(i, this.onFinishCallback.bind(this));
             }
         }
     }
 
-    private playInterval() {
-        let key: string = this._audioList[this._audioIndex];
-        let audioPro: cc_zest_audio_type = TweenAudio._audioPool.get(key);
+    private runPlayCallbacks(audioPro: cc_zest_audio_type) {
+        const audioID = audioPro.audioID;
+        const callbacks = audioPro.callbacks;
+        for (const callback of callbacks) {
+            if (callback.type === 'play') {
+                SAFE_CALLBACK(callback.call, TweenAudio.audioEngine.getCurrentTime(audioID));
+            }
+        }
+    }
 
-        tools.Timer.setInterval(() => {
-            this.playAudioInOrder(TweenAudio._audioPool.get(this._audioList[this._audioIndex]).callbacks);
-        }, audioPro.audio.delay);
+    private runStopCallbacks(audioPro: cc_zest_audio_type) {
+        const audioID = audioPro.audioID;
+        const callbacks = audioPro.callbacks;
+        for (const callback of callbacks) {
+            if (callback.type === 'stop') {
+               SAFE_CALLBACK(callback.call, TweenAudio.audioEngine.getDuration(audioID));
+            }
+        }
+    }
+
+    //非顺序播放模式下,每个音频结束的回调
+    private onFinishCallback(audioPro: cc_zest_audio_type) {
+        audioPro.played = true;
+        this.runStopCallbacks(audioPro);
+        this._audioIndex++;
+        if (this._audioIndex === this._audioList.length) {
+            this.reset();
+        }
+    }
+
+    //顺序播放模式下每个音频结束的回调
+    private onFinishCallbackInOrder(audioPro: cc_zest_audio_type) {
+        audioPro.played = true;
+        this.runStopCallbacks(audioPro);
+        this._audioIndex++;
+        if (this._audioIndex < this._audioList.length) {
+            if (this._canPlay) {
+                this.playInterval(this.playAudioInOrder.bind(this));
+            }
+        }
+        else {
+            this.reset();
+        }
+    }
+
+    //循环模式下播放每一个音频的回调
+    private onFinishCallbackInLoop(audioPro: cc_zest_audio_type) {
+        audioPro.played = true;
+        this.runStopCallbacks(audioPro);
+        this._audioIndex++;
+        if (this._audioIndex === this._audioList.length) {
+            this._status     = 'pending';
+            this._audioIndex = 0;
+        }
+        if (this._canPlay) {
+            this.playInterval(this.playAudioInLoop.bind(this), audioPro);
+        }
+    }
+
+    /**按顺序播放音频 */
+    private playAudioInOrder() {
+        this.playAudio(this._audioIndex, this.onFinishCallbackInOrder.bind(this));
+    }
+
+    /**循环播放音频 */
+    private playAudioInLoop(lastAudioPro: cc_zest_audio_type) {
+        if (lastAudioPro) {
+            lastAudioPro.played = false;
+        }
+        this.playAudio(this._audioIndex, this.onFinishCallbackInLoop.bind(this));
+    }
+
+    private playInterval(playAudioCallback: Function, lastAudioPro?: cc_zest_audio_type) {
+        let key: string = this._audioList[this._audioIndex];
+        let audioPro: cc_zest_audio_type = this._audioPool.get(key);
+        if (audioPro.clip) {
+            tools.Timer.setInterval(() => {
+                playAudioCallback(lastAudioPro);
+            }, audioPro.audio.delay);
+        }
     }
 
     private bgmProps(props: IAudioBGM): cc_zest_audio_type {
@@ -448,13 +542,14 @@ export class TweenAudio implements ITweenAudio {
         return audioPro;
     }
 
-    private effectProps(props: IAudio): cc_zest_audio_type {
+    private effectProps(props: IAudioEffect): cc_zest_audio_type {
         let audioPro: cc_zest_audio_type = {
             audio: {
                 url: props.url,
                 loop: (props.loop === undefined || props.loop === null) ? false : props.loop,
                 volume: (props.volume === null || props.volume === undefined) ? 1 : props.volume,
-                delay: props.delay ? props.delay : 0
+                delay: props.delay ? props.delay : 0,
+                oneShot: (props.oneShot === undefined || props.oneShot === null) ? true : props.oneShot
             }, 
             callbacks: [],
             clip: null,
@@ -465,10 +560,21 @@ export class TweenAudio implements ITweenAudio {
         return audioPro;
     }
 
-    private notLoadAudio() {
-        this._status = 'rejected';
-        this._err = new Error('没有播放过这个音频,或者没有加载过这个音频!');
-        this.callRejected();
+    private notLoadAudio(url: string) {
+        Debug.warn(`没有播放过 ${url} 这个音频，或者这个音频还没加载出来，所以对这个音频施加的操作，例如停止播放、设置音量等操作是无效的!\n此错误一般不需要处理`);
+    }
+}
+
+export namespace TweenAudio {
+    /**音频播放模式 */
+    export enum Model {
+        NONE,
+        /**按顺序播放音频队列的所有音频，播放完后就停止，此模式下设置单个音频循环播放是无效的 */
+        ORDER,
+        /**循环播放音频列表的所有音频，即按照压入的顺序逐个播放，播放完一轮后又重新开始新的一轮，一直循环下去，此模式下设置单个音频循环播放是无效的 */
+        LOOP,
+        /**并行播放音频队列所有音频 */
+        PARALLEL
     }
 }
 

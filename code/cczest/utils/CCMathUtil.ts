@@ -5,6 +5,12 @@ import { Vec3 } from "cc";
 
 export  class CCMathUtil {
 
+    /**
+     * 四舍五入，保留小数点后几位
+     * @param num 
+     * @param keep 保留小数点的位数，默认是0，即不保留小数点
+     * @returns 
+     */
     public static round(num: number, keep: number = 0): number {
         let multiple: number = 1;
         while (keep-- > 0) multiple = multiple * 10;
@@ -12,12 +18,24 @@ export  class CCMathUtil {
         return Math.round(num) / multiple;
     }
 
+    /**
+     * 取随机数，结果是一个小数
+     * @param min 
+     * @param max 
+     * @returns 
+     */
     public static random(min: number, max: number): number {
         var delta = max - min;
         var rand = Math.random();
         return (min + rand * delta);
     }
 
+    /**
+     * 取随机数，结果是一个整数
+     * @param min 
+     * @param max 
+     * @returns 
+     */
     public static randomInt(min: number, max: number): number {
         return Math.round(this.random(min, max));
     }

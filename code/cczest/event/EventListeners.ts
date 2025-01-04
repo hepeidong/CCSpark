@@ -1,4 +1,4 @@
-import { IEventListeners, IHandler } from "../lib.zest";
+import { IEventListeners, IHandler } from "zest";
 import { utils } from "../utils";
 
 

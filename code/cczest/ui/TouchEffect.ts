@@ -5,7 +5,7 @@ import { setPriority } from "../util";
 import { WindowManager } from "./WindowManager";
 import { Debug } from "../Debugger";
 import { tools } from "../tools";
-import { ITweenAnimat } from "../lib.zest";
+import { ITweenAnimat } from "zest";
 import { VERSION } from "cc";
 import { utils } from "../utils";
 

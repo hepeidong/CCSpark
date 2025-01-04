@@ -1,7 +1,8 @@
 import { AutoReleasePool, PoolManager } from "./AutoReleasePool";
 import { AutoRelease } from "./AutoRelease";
 import { Asset, AssetManager, Node, SceneAsset, Sprite } from "cc";
-import { cc_zest_loader_AssetType, Constructor, ILoader } from "../lib.zest";
+import { cc_zest_loader_AssetType, Constructor, ILoader } from "zest";
+
 
 
 type LoadArgs = {
@@ -202,13 +203,19 @@ export class Loader implements ILoader {
     }
 
     /**
-     * 通过路径与类型获取资源
+     * 通过路径与类型从资源包中获取资源
      * @param path 
      * @param type 
      * @returns 
      */
     public get<T extends Asset> (path: string, type?: Constructor<T>): T {
-        return this._bundle.get<T>(path, type);
+        const asset = this._bundle.get<T>(path, type);
+        if (asset instanceof Asset) {
+            if (!this._pool.has(asset)) {
+                this._pool.add(asset);
+            }
+        }
+        return asset;
     }
 
     /**

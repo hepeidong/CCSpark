@@ -1,5 +1,5 @@
 import { AnimationClip, Asset, dragonBones, resources, sp } from "cc";
-import { ILoader } from "../lib.zest";
+import { ILoader } from "zest";
 import { SAFE_CALLBACK } from "../Define";
 import { Assert } from "../exceptions/Assert";
 import { Res } from "./Res";

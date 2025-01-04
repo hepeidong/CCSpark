@@ -1,5 +1,5 @@
 import { Node, Prefab, instantiate } from "cc"
-import { IConversionSystem, IEntity, IPrimaryEntity, IWorld } from "../lib.zest";
+import { IConversionSystem, IEntity, IPrimaryEntity, IWorld } from "zest";
 
 
 type PrefabType = {

@@ -5,6 +5,13 @@ import { tools } from "../tools";
 
 type AudioContainer<T> = {[n: number]: T;}
 
+/**
+ * author: 何沛东
+ * 
+ * date: 2020/10/20
+ * 
+ * description: 管理音频播放
+ */
 export class AudioEngine {
     private audioIDIndex: number = 0;
     private _bgmID: number;
@@ -140,6 +147,9 @@ export class AudioEngine {
         if (this._audioBGM.playing) {
             this._audioBGM.stop();
         }
+        if (this._bgmID === -1) {
+            this._bgmID = this.getAudioID();
+        }
         this._audioBGM.clip = clip;
         this._audioBGM.loop = loop;
         this._audioBGM.volume = volume;
@@ -198,10 +208,10 @@ export class AudioEngine {
             const callback = this._audioFinishCallbacks[audioID];
             SAFE_CALLBACK(callback);
             this._audioPool.put(newAudio);
-            delete this._audioAll[audioID];
             if (audioID in this._audioFinishCallbacks) {
                 delete this._audioFinishCallbacks[audioID];
             }
+            delete this._audioAll[audioID];
             this._audioBGM.play();
             const audioAll = this._audioAll;
             for (const k in audioAll) {
@@ -219,7 +229,7 @@ export class AudioEngine {
      * @param volume 
      * @returns 
      */
-    public playEffect(clip: AudioClip, loop: boolean, volume: number) {
+    public playEffect(clip: AudioClip, oneShot: boolean, loop: boolean, volume: number) {
         const audioID = this.createAudioSource(clip, loop, volume);
         const newAudio = this._audioAll[audioID];
         const time = newAudio.duration - newAudio.currentTime;
@@ -227,16 +237,21 @@ export class AudioEngine {
             newAudio.play();
         }
         else {
-            newAudio.playOneShot(clip);
+            if (oneShot) {
+                newAudio.playOneShot(clip);
+            }
+            else {
+                newAudio.play();
+            }
         }
         newAudio.scheduleOnce(() => {
             const callback = this._audioFinishCallbacks[audioID];
             SAFE_CALLBACK(callback);
             this._audioPool.put(newAudio);
-            delete this._audioAll[audioID];
             if (audioID in this._audioFinishCallbacks) {
                 delete this._audioFinishCallbacks[audioID];
             }
+            delete this._audioAll[audioID];
         }, time);
         return audioID;
     }

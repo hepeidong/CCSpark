@@ -2,7 +2,6 @@ import { EventSystem } from "../event";
 import { Facade } from "../puremvc";
 import { SceneManager } from "./SceneManager";
 import { setParentType } from "../decorator/Decorator";
-import { IAssetRegister, IGameWorld, ISceneManager, IViewComplete, IViewProgress, ViewComplete, ViewProgress } from "../lib.zest";
 import { director, Game, game, ISchedulable, Prefab, Scheduler } from "cc";
 import { STARTUP } from "../Define";
 import { UUID } from "../utils";
@@ -11,6 +10,7 @@ import { GameWorldEvent, GamePlatform } from "./AppEnum";
 import { DataSave } from "./file-save";
 import { AssetRegister } from "../res/AssetRegister";
 import { Asset } from "cc";
+import { IAssetRegister, IGameWorld, ISceneManager, IViewComplete, IViewProgress, ViewComplete, ViewProgress } from "zest";
 
 
 /**

@@ -1,4 +1,4 @@
-import { IGuideAction } from "../lib.zest";
+import { IGuideAction } from "zest";
 
 export class GuideAction implements IGuideAction {
     private _isValid: boolean;

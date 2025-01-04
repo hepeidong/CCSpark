@@ -1,5 +1,5 @@
 import { EventSystem } from "../event";
-import { IHandler, IRegister } from "../lib.zest";
+import { IHandler, IRegister } from "zest";
 
 export class Register implements IRegister {
     private _commands: string[];

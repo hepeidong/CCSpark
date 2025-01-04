@@ -3,7 +3,7 @@ import { decorator } from "../decorator/Decorator";
 import { Debug } from "../Debugger";
 import { SAFE_CALLBACK } from "../Define";
 import { GameSocket } from "./GameSocket";
-import { cc_zest_socket_protocol } from "../lib.zest";
+import { cc_zest_socket_protocol } from "zest";
 
 const {zestClass} = decorator;
 

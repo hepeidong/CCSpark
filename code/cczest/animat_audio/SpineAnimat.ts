@@ -1,16 +1,17 @@
+import { cc_zest_animat_resolved_type, cc_zest_animat_spineAnimat_type, ISpineAnimat } from "zest";
 import { SAFE_CALLBACK } from "../Define";
 import { SpineLoad } from "../res/LoadAnimation";
 import { AnimatBase } from "./AnimatBase";
 import { Node, sp } from "cc";
-import { cc_zest_animat_resolved_type, cc_zest_animat_spineAnimat_type, ISpineAnimat } from "../lib.zest";
 
 
 export  class SpineAnimat extends AnimatBase<cc_zest_animat_spineAnimat_type> {
     private _skeleton: sp.Skeleton;
     private _frameRate: number = 30; //动画帧率
+    
     private static isStop: boolean = false;
     constructor(target: Node, bundle: string) {
-        super(() => {
+        super(bundle, () => {
             if (SpineAnimat.isStop && this._animatList) {
                 this._animatList.forEach(animat => {
                     animat.props.played = true;
@@ -19,7 +20,6 @@ export  class SpineAnimat extends AnimatBase<cc_zest_animat_spineAnimat_type> {
             }
             SpineAnimat.isStop = false;
         });
-
         this._animatLoad = new SpineLoad(bundle);
         this.target(target);
     }
@@ -108,7 +108,14 @@ export  class SpineAnimat extends AnimatBase<cc_zest_animat_spineAnimat_type> {
     //加载spine骨骼动画
     public async skeletonLoaded(props: ISpineAnimat) {
         if (props.url) {
-            let asset = await this.awaitLoad(sp.Skeleton, props.url);
+            let asset: sp.SkeletonData;
+            if (this._assets.has(props.url)) {
+                asset = this._assets.get(props.url) as sp.SkeletonData;
+            }
+            else {
+                asset = await this.awaitLoad(sp.Skeleton, props.url);
+                this._assets.set(props.url, asset);
+            }
             if (asset) {
                 this.setSkeletonData(asset);
             }

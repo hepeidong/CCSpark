@@ -2,8 +2,9 @@ import { FrameAnimat } from "./FrameAnimat";
 import { SpineAnimat } from "./SpineAnimat";
 import { DragonBonesAnimat } from "./DragonBonesAnimat";
 import { Animation, dragonBones, Node, sp, resources } from "cc";
-import { AnimatPlayStatus, IDragonBonesAnimat, IFrameAnimat, ISpineAnimat, ITweenAnimat } from "../lib.zest";
 import { SAFE_CALLBACK } from "../Define";
+import { AnimatPlayStatus, IDragonBonesAnimat, IFrameAnimat, ISpineAnimat, ITweenAnimat } from "zest";
+
 
 
 enum AnimatType {
@@ -19,7 +20,9 @@ enum AnimatType {
 
 /**
  * author: 何沛东
+ * 
  * date: 2020/10/20
+ * 
  * description: TweenAnimat 提供一个灵活的方式来播放动画，支持链式结构按顺序播放多个不同类型的动画，可以延迟播放动画，可以抛出错误异常
  */
 export class TweenAnimat implements ITweenAnimat {
@@ -77,6 +80,12 @@ export class TweenAnimat implements ITweenAnimat {
     /**dragonBones骨骼动画组件 */
     public getDB(): dragonBones.ArmatureDisplay {
         return this._dragonBonesAnimat.getDB();
+    }
+
+    public clear(): void {
+        if (this._frameAnimat) this._frameAnimat.clear();
+        if (this._spineAnimat) this._spineAnimat.clear();
+        if (this._dragonBonesAnimat) this._dragonBonesAnimat.clear();
     }
 
     /**开始播放动画 */

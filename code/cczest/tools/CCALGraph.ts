@@ -6,7 +6,7 @@
  * 4.无向网
  * ***************************************************************/
 
-import { cc_zest_alGraph_edge_type, cc_zest_alGraph_vertex_type } from "../lib.zest";
+import { cc_zest_alGraph_edge_type, cc_zest_alGraph_vertex_type } from "zest";
 import { Debug } from "../Debugger";
 import { Assert } from "../exceptions/Assert";
 

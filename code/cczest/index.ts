@@ -1,8 +1,8 @@
-export * from "./lib.zest";
 export * from "./decorator";
 export * from "./Debugger";
 export * from "./app";
 export * from "./ui";
+export * from "./util";
 export * from "./utils";
 export * from "./res/Res";
 export { SAFE_CALLBACK, SAFE_CALLBACK_CALLER } from "./Define";

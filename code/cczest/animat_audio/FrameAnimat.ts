@@ -2,14 +2,14 @@ import { SAFE_CALLBACK } from "../Define";
 import { ClipLoad } from "../res/LoadAnimation";
 import { AnimatBase } from "./AnimatBase";
 import { Animation, AnimationClip, AnimationState, Node } from "cc";
-import { cc_zest_animat_frameAnimat_type, cc_zest_animat_resolved_type, IFrameAnimat } from "../lib.zest";
 import { utils } from "../utils";
+import { cc_zest_animat_frameAnimat_type, cc_zest_animat_resolved_type, IFrameAnimat } from "zest";
 
 export  class FrameAnimat extends AnimatBase<cc_zest_animat_frameAnimat_type> {
     private _animation: Animation;
     private static isStop: boolean = false;
     constructor(target: Node, bundle: string) {
-        super(() => {
+        super(bundle, () => {
             if (FrameAnimat.isStop && this._animatList) {
                 this._animatList.forEach(animat => {
                     animat.props.played = true;
@@ -52,7 +52,6 @@ export  class FrameAnimat extends AnimatBase<cc_zest_animat_frameAnimat_type> {
     public addAnimatProps(props: IFrameAnimat): void {
         try {
             props.delay = props.delay ? props.delay : 0;
-            // props.loop = props.loop ? props.loop : false;
             props.repeatCount = props.repeatCount;
             props.startTime = props.startTime ? props.startTime : 0;
             props.default = props.default ? props.default : false;
@@ -75,7 +74,14 @@ export  class FrameAnimat extends AnimatBase<cc_zest_animat_frameAnimat_type> {
             this.addClip(props.clip);
         }
         else {
-            let asset = await this.awaitLoad(Animation, props.url);
+            let asset: AnimationClip;
+            if (this._assets.has(props.url)) {
+                asset = this._assets.get(props.url) as AnimationClip;
+            }
+            else {
+                asset = await this.awaitLoad(Animation, props.url);
+                this._assets.set(props.url, asset);
+            }
             if (asset) {
                 this.addClip(asset);
             }

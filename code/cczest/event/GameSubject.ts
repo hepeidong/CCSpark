@@ -1,4 +1,4 @@
-import { IGameObserver, IGameSubject } from "../lib.zest";
+import { IGameObserver, IGameSubject } from "zest";
 import { Debug } from "../Debugger";
 import { utils } from "../utils";
 import { Notify } from "./Notify";

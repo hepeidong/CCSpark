@@ -1,21 +1,21 @@
 import { Button, Component, EventHandler, Node, Slider } from "cc";
-import { IListener, INotify, IEventBus } from "../lib.zest";
+import { IListener, INotify, IEventObserver } from "zest";
 import { Debug } from "../Debugger";
 import { CCObserver } from "./CCObserver";
 import { EventListeners, CCHandler } from "./EventListeners";
-import { EventBus } from "./EventBus";
+import { EventObserver } from "./EventObserver";
 import { CCSignal } from "./Signal";
 
 
 export class EventSystem {
 
-    private static _eventBus: IEventBus = null;
+    private static _observer: IEventObserver = null;
     /**观察者事件系统 */
-    public static get eventBus() {
-        if (!this._eventBus) {
-            this._eventBus = new EventBus();
+    public static get observer() {
+        if (!this._observer) {
+            this._observer = new EventObserver();
         }
-        return this._eventBus;
+        return this._observer;
     }
 
     private static _listener: EventListeners = null;
@@ -31,35 +31,35 @@ export class EventSystem {
         target.on('click', handler, caller);
     }
 
-    public static addClickEventHandler(target: Node, caller: any, handler: string, customData?: any) {
+    public static addClickEventHandler(target: Node, caller: any, handler: string, customData: any = "") {
         this.addEventHandler(Button, 'clickEvents', target, caller, handler, customData);
     }
 
-    public static addSliderEventHandler(target: Node, caller: any, handler: string, customData?: any) {
+    public static addSliderEventHandler(target: Node, caller: any, handler: string, customData: any = "") {
         this.addEventHandler(Slider, 'slideEvents', target, caller, handler, customData);
     }
 
-    public static addToggleEventHandler(target: Node, caller: any, handler: string, customData?: any) {
+    public static addToggleEventHandler(target: Node, caller: any, handler: string, customData: any = "") {
         this.addEventHandler(Slider, 'clickEvents', target, caller, handler, customData);
     }
 
     /**文本编辑按下回车键执行的回调 */
-    public static addEditReturnEventHandler(target: Node, caller: any, handler: string, customData?: any) {
+    public static addEditReturnEventHandler(target: Node, caller: any, handler: string, customData: any = "") {
         this.addEventHandler(Slider, 'editingReturn', target, caller, handler, customData);
     }
 
     /**结束编辑文本输入框时触发的事件回调 */
-    public static addEditDidEndedEventHandler(target: Node, caller: any, handler: string, customData?: any) {
+    public static addEditDidEndedEventHandler(target: Node, caller: any, handler: string, customData: any = "") {
         this.addEventHandler(Slider, 'editingDidEnded', target, caller, handler, customData);
     }
 
     /**编辑文本输入框时触发的事件回调 */
-    public static addTextChangedEventHandler(target: Node, caller: any, handler: string, customData?: any) {
+    public static addTextChangedEventHandler(target: Node, caller: any, handler: string, customData: any = "") {
         this.addEventHandler(Slider, 'textChanged', target, caller, handler, customData);
     }
 
     /**开始编辑文本输入框触发的事件回调 */
-    public static addEditDidBeganEventHandler(target: Node, caller: any, handler: string, customData?: any) {
+    public static addEditDidBeganEventHandler(target: Node, caller: any, handler: string, customData: any = "") {
         this.addEventHandler(Slider, 'editingDidBegan', target, caller, handler, customData);
     }
 

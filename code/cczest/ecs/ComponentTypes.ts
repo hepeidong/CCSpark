@@ -1,4 +1,4 @@
-import { IComponent } from "../lib.zest";
+import { IComponent } from "zest";
 import { tools } from "../tools";
 import { createMap, removeElement } from "./ecs-utils";
 

@@ -1,12 +1,15 @@
-import { IWindowBase } from "../lib.zest";
+import { IWindowBase } from "zest";
 import { Debug } from "../Debugger";
 import { LayerManager } from "./LayerManager";
 import { WindowLayer } from "./WindowLayer";
 
 /**
  * author: HePeiDong
+ * 
  * date: 2020/7/4
+ * 
  * name: 顶层视图ui管理器
+ * 
  * description: 顶层视图ui管理，栈存储方式。
  */
 export  class TopManager extends LayerManager {
@@ -51,6 +54,9 @@ export  class TopManager extends LayerManager {
         if (this._windowLayer.addTopWindow(view, view.hasMask)) {
             const list: IWindowBase[] = this._list as IWindowBase[];
             list.push(view);
+            if (this.canRelease) {
+                this._cacheWindow.push(view);
+            }
         }
     }
 }

@@ -1,10 +1,14 @@
 import { Director, director, Node } from "cc";
 import { SAFE_CALLBACK } from "../Define";
-import { AnimatPlayStatus, cc_zest_animat_resolved_type } from "../lib.zest";
 import { AnimatLoad } from "../res/LoadAnimation";
 import { tools } from "../tools";
+import { Asset } from "cc";
+import { Res } from "../res/Res";
+import { AnimatPlayStatus, cc_zest_animat_resolved_type } from "zest";
+
 
 export  abstract class AnimatBase<T> {
+    private _bundle: string;
     protected _status: AnimatPlayStatus;
     protected _err: Error;
     protected _target: Node;
@@ -13,13 +17,16 @@ export  abstract class AnimatBase<T> {
     protected _animatList: tools.Queue<T>;
     protected _nextCallback: Function;
     protected _animatLoad: AnimatLoad;
+    protected _assets: Map<string, Asset>;
     protected _playEnd: Function; //动画列表播放完成，即所有动画都播放完了
     protected _rejected: Function;
 
-    constructor(callback: (...args: any[]) => void) {
+    constructor(bundle: string, callback: (...args: any[]) => void) {
+        this._bundle = bundle;
         this._status = "pending";
         this.index   = 0;
         this._animatList = new tools.Queue();
+        this._assets     = new Map();
         director.on(Director.EVENT_BEFORE_UPDATE, callback, this);
     }
 
@@ -47,6 +54,16 @@ export  abstract class AnimatBase<T> {
 
     public setPlayEnd(callback: Function) {
         this._playEnd = callback;
+    }
+
+    public clear() {
+        if (Res.hasLoader(this._bundle)) {
+            const loader = Res.getLoader(this._bundle);
+            this._assets.forEach((asset) => {
+                loader.delete(asset);
+            });
+            this._assets.clear();
+        }
     }
 
     protected awaitLoad(type: any, url: string) {

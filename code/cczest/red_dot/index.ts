@@ -1,5 +1,5 @@
 import { js } from "cc";
-import { IRedDotAction } from "../lib.zest";
+import { IRedDotAction } from "zest";
 import { getRedDotActionClassNames } from "../decorator/Decorator";
 import { CCRedDotAction } from "./CCRedDotAction";
 import { RedDotManager } from "./RedDotManager";

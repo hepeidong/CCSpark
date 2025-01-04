@@ -1,10 +1,11 @@
 import { CCString, Component, Enum, error, log, Node, Sprite, SpriteFrame, UITransform, _decorator, __private } from "cc";
-import { cc_zest_bitLblImage_type } from "../lib.zest";
 import { SAFE_CALLBACK } from "../Define";
 import { utils } from "../utils";
 import { LabelRemove } from "./LabelRemove";
 import { Vec3 } from "cc";
 import { math } from "cc";
+import { cc_zest_bitLblImage_type } from "zest";
+
 
 
 const _vec3Temp = new Vec3();

@@ -1,12 +1,15 @@
-import { IWindowBase } from "../lib.zest";
+import { IWindowBase } from "zest";
 import { Debug } from "../Debugger";
 import { LayerManager } from "./LayerManager";
 import { WindowLayer } from "./WindowLayer";
 
 /**
  * author: HePeiDong
+ * 
  * date: 2020/7/4
+ * 
  * name: 根视图ui管理器
+ * 
  * description: 根视图ui管理，栈储方式。
  */
 export  class RootManager extends LayerManager {
@@ -55,6 +58,9 @@ export  class RootManager extends LayerManager {
             const list: IWindowBase[] = this._list;
             this.delView();
             list.push(view);
+            if (this.canRelease) {
+                this._cacheWindow.push(view);
+            }
         }
     }
 

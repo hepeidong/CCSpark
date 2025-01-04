@@ -1,4 +1,4 @@
-import { IBaseEntity } from "../lib.zest";
+import { IBaseEntity } from "zest";
 
 
 export function createMap (forceDictMode?: boolean): any {

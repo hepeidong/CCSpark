@@ -1,5 +1,5 @@
 import { assetManager, Component, Sprite, SpriteFrame, Texture2D, _decorator } from "cc";
-import { ILoader } from "../lib.zest";
+import { ILoader } from "zest";
 import { Assert } from "../exceptions/Assert";
 
 const {ccclass} = _decorator;

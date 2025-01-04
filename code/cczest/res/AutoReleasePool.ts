@@ -1,5 +1,5 @@
 import { Debug } from "../Debugger";
-import { IListener } from "../lib.zest";
+import { IListener } from "zest";
 import { Assert } from "../exceptions/Assert";
 import { Asset } from "cc";
 import { EventSystem } from "../event";
@@ -44,6 +44,7 @@ export class AutoReleasePool {
             const flag = asset.refCount <= 1;
             asset.decRef();
             if (flag) {
+                Debug.info(`释放 ${key} 资源`);
                 this._managedAssetMap.delete(key);
             }
             return true;

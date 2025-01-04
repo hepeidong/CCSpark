@@ -1,4 +1,4 @@
-import { IListener, ISignal } from "../lib.zest";
+import { IListener, ISignal } from "zest";
 import { tools } from "../tools";
 
 type PriorityListener<T extends IListener> = {

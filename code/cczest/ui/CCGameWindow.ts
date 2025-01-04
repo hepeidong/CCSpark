@@ -1,5 +1,5 @@
 import { Component } from "cc";
-import { IGameLayout } from "../lib.zest";
+import { IGameLayout } from "zest";
 import { Assert } from "../exceptions/Assert";
 import { CCGameLayout } from "./CCGameLayout";
 import { WindowBase } from "./WindowBase";
@@ -44,7 +44,7 @@ export class CCGameWindow<T extends IGameLayout> extends WindowBase<T> {
         const components = this.node.getComponents(Component);
         for (const component of components) {
             if (component instanceof CCGameLayout) {
-                component["_bundbleName"] = this.bundbleName;
+                component["_bundleName"] = this.bundleName;
                 this.setViewComponent(component);
                 flag = true;
                 return;

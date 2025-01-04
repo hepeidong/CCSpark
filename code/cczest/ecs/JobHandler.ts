@@ -1,4 +1,5 @@
-import { IJobHandler, ISystem } from "../lib.zest";
+import { IJobHandler, ISystem } from "zest";
+
 
 export class JobHandler<Method> implements IJobHandler<Method> {
     protected _method: Method;

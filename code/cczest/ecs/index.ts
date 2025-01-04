@@ -1,4 +1,4 @@
-import { IBaseEntity } from "../lib.zest";
+import { IBaseEntity } from "zest";
 import { InitializationSystemGroup, PresentationSystemGroup, SimulationSystemGroup } from "./ComponentSystemGroup";
 import { setEcsDebug } from "./ECSDef";
 import { CCSystem } from "./System";

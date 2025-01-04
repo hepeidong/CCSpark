@@ -1,7 +1,7 @@
 import { CCSystem } from "./System";
 import { SystemUpdateSequenceSettingException } from "./exceptions/SystemUpdateSequenceSettingException";
 import { asUpdateAfter, asUpdateBefore, asUpdateInGroup, removeElement } from "./ecs-utils";
-import { IBaseEntity, ISystem, ISystemGroup } from "../lib.zest";
+import { IBaseEntity, ISystem, ISystemGroup } from "zest";
 import { Debug } from "../Debugger";
 import { EndEntityCommandBufferSystem } from "./EndEntityCommandBufferSystem";
 

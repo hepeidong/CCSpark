@@ -1,4 +1,4 @@
-import { IBaseEntity, JobEntityMethod } from "../lib.zest";
+import { IBaseEntity, JobEntityMethod } from "zest";
 import { JobHandler } from "./JobHandler";
 
 

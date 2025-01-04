@@ -1,7 +1,7 @@
 import { Debug } from "../Debugger";
 import { SAFE_CALLBACK } from "../Define";
 import { EventSystem } from "../event";
-import { IBaseEntity, IEntitiesGroup, IEntityArchetype, IEntityManager, IMatcher, IMatcherChange, ISystem, MatcherChange } from "../lib.zest";
+import { IBaseEntity, IEntitiesGroup, IEntityArchetype, IEntityManager, IMatcher, IMatcherChange, ISystem, MatcherChange } from "zest";
 import { utils } from "../utils";
 import { ECS_DEBUG } from "./ECSDef";
 

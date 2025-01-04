@@ -1,8 +1,9 @@
-import { Color, Label, Node, Sprite, UIOpacity, UITransform } from "cc";
+import { Label, Node, Sprite, UIOpacity, UITransform } from "cc";
 import { GuideManager } from "./GuideManager";
 import { setPriority } from "../util";
 import { Layers } from "cc";
 import { RichText } from "cc";
+import { Camera } from "cc";
 
 export function createSprite(name: string) {
     const newNode: Node = new Node(name);
@@ -12,22 +13,15 @@ export function createSprite(name: string) {
 }
 
 export function createText(name: string) {
-    let node: Node = new Node(name);
+    const node: Node = new Node(name);
     node.layer = Layers.Enum.UI_2D;
     node.addComponent(RichText).string = "";
-    // const ui = node.getComponent(UITransform);
     node.addComponent(UITransform);
-    // ui.width = 100;
-    // ui.height = 40;
-    // node.getComponent(RichText);
-    // label.cacheMode = Label.CacheMode.NONE;
-    // label.overflow = Label.Overflow.SHRINK;
-    // label.color = Color.BLACK;
     return node;
 }
 
 export function createTip(name: string) {
-    let tip: Node = new Node(name);
+    const tip: Node = new Node(name);
     tip.layer = Layers.Enum.UI_2D;
     tip.addComponent(Label).string = '点击任意继续';
     tip.getComponent(Label).cacheMode = Label.CacheMode.BITMAP;

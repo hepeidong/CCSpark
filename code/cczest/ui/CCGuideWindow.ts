@@ -1,20 +1,20 @@
-import { Debug } from "../Debugger";
 import { Assert } from "../exceptions/Assert";
-import { GuideHelper } from "../guide/component/GuideHelper";
 import { WindowBase } from "./WindowBase";
 import { WindowManager } from "./WindowManager";
-import { IAssetRegister, IGuideWindow } from "../lib.zest";
-import { Component } from "cc";
+import { IAssetRegister, IGuideHelper, IGuideWindow } from "zest";
 import { UIType } from "./UIType";
 import { JsonAsset } from "cc";
 
 /**
  * author: HePeiDong
+ * 
  * date: 2021/2/20
+ * 
  * name: 引导提示页面基类
+ * 
  * description: 控制引导提示页面的相关显示,关闭,销毁,资源释放
  */
-export class CCGuideWindow extends WindowBase<GuideHelper> implements IGuideWindow {
+export class CCGuideWindow extends WindowBase<IGuideHelper> implements IGuideWindow {
 
     public closeGuideWindow() {
         WindowManager.instance.delView(this.getViewType(), false);
@@ -29,15 +29,16 @@ export class CCGuideWindow extends WindowBase<GuideHelper> implements IGuideWind
         return UIType.TOP_LAYER;
     }
 
+    protected onDestroy(): void {
+        this.view.clear();
+    }
+
     protected _loadView() {
         let flag = false;
-        const components = this.node.getComponents(Component);
-        for (const component of components) {
-            if (component instanceof GuideHelper) {
-                this.setViewComponent(component);
-                flag = true;
-                return;
-            }
+        const component = this.node.getComponent("GuideHelper");
+        if (component) {
+            flag = true;
+            this.setViewComponent(component);
         }
         //缺少GuideHelper组件
         Assert.handle(Assert.Type.GetComponentException, flag, "GuideHelper");
